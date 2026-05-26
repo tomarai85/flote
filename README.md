@@ -4,7 +4,7 @@
 >
 > Option+Space で付箋が浮かぶ。思いついたことをそのまま書く。Organize ボタンを 1 回押す。AI がタイトル・要点・チェックリストに変換する。それだけ。
 
-- 公開リポジトリ: https://github.com/Tomonori-Arai/flote (= Phase 1 公開予定)
+- 公開リポジトリ: https://github.com/tomarai85/flote (= Phase 1 公開予定)
 - 公式 LP: https://flote-website.vercel.app
 - 親 brand: [a Direct product](https://direct-homepage.vercel.app)
 - License: [FSL-1.1-ALv2](./LICENSE.md) (= 2 年後 Apache 2.0 化)

@@ -4,7 +4,7 @@
 >
 > Hit Option+Space. A 160px sticky note floats over whatever you were doing. Type whatever you were thinking. Press Organize. AI turns it into a title, a one-liner, and a checkbox action list. That's the whole product.
 
-- Repository: https://github.com/Tomonori-Arai/flote (= going public in Phase 1)
+- Repository: https://github.com/tomarai85/flote (= going public in Phase 1)
 - Website: https://flote-website.vercel.app
 - Parent brand: [a Direct product](https://direct-homepage.vercel.app)
 - License: [FSL-1.1-ALv2](./LICENSE.md) (= auto-converts to Apache 2.0 after 2 years)

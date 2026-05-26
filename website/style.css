@@ -1572,3 +1572,159 @@ kbd {
     opacity: 1 !important; transform: none !important;
   }
 }
+
+/* ===== Nav GitHub link (= 2026-05-27 Phase 1) ===== */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.nav-github {
+  color: var(--text-2);
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 4px;
+  transition: color 150ms ease;
+}
+.nav-github:hover { color: var(--text-1); }
+
+/* ===== Roadmap section (= 2026-05-27 Phase 1) ===== */
+.roadmap {
+  padding: var(--sp-8) 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.roadmap .section-eyebrow { text-align: center; }
+.roadmap h2 { text-align: center; }
+.roadmap-lead {
+  text-align: center;
+  color: var(--text-2);
+  max-width: 540px;
+  margin: 0 auto var(--sp-6);
+}
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.roadmap-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: var(--sp-5);
+}
+.roadmap-card-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(45, 212, 191, 0.12);
+  color: var(--accent);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: var(--sp-3);
+  letter-spacing: 0.04em;
+}
+.roadmap-card h3 {
+  font-size: 17px;
+  margin: 0 0 var(--sp-3);
+  line-height: 1.4;
+}
+.roadmap-card ul {
+  padding-left: 18px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+}
+.roadmap-card li { margin-bottom: 6px; }
+.roadmap-card a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+.roadmap-github {
+  text-align: center;
+  margin: var(--sp-6) auto;
+  max-width: 540px;
+}
+.roadmap-github p {
+  color: var(--text-2);
+  margin-bottom: var(--sp-3);
+}
+.roadmap-waitlist {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: var(--sp-6);
+  max-width: 540px;
+  margin: 0 auto;
+  text-align: center;
+}
+.roadmap-waitlist h3 {
+  font-size: 17px;
+  margin: 0 0 var(--sp-2);
+}
+.roadmap-waitlist-sub {
+  color: var(--text-3);
+  font-size: 13px;
+  margin-bottom: var(--sp-4);
+}
+.roadmap-waitlist-form {
+  display: flex;
+  gap: var(--sp-2);
+}
+.roadmap-waitlist-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.roadmap-waitlist-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.roadmap-waitlist-btn { flex-shrink: 0; }
+.roadmap-waitlist-note {
+  color: var(--text-3);
+  font-size: 12px;
+  margin-top: var(--sp-3);
+  line-height: 1.6;
+}
+.roadmap-waitlist-note a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ===== Footer links (= 2026-05-27 Phase 1) ===== */
+.footer-links {
+  display: flex;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+  font-size: 13px;
+}
+.footer-links a {
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.footer-links a:hover { color: var(--text-1); }
+
+/* ===== Responsive ===== */
+@media (max-width: 720px) {
+  .roadmap-grid { grid-template-columns: 1fr; }
+  .roadmap-waitlist-form { flex-direction: column; }
+  .roadmap-waitlist-btn { width: 100%; }
+  .footer-links { flex-wrap: wrap; gap: var(--sp-3); }
+  .nav-actions { gap: var(--sp-2); }
+  .nav-github { font-size: 13px; padding: 6px 2px; }
+}

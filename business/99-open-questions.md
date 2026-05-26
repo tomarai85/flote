@@ -79,7 +79,36 @@
 - [ ] X / Reddit (r/macapps, r/productivity, r/notion) で「メモアプリ 使いこなせない」系投稿収集
 - [ ] Flote の既存コードが「整理できない人向け」になっているか逆算監査 (過剰に "使いこなし前提" な UX が混入していないか)
 
+## 7. 対話で確定したこと (2026-05-27)
+
+### 確定: GitHub 公開戦略 = Source-available (FSL-1.1-ALv2)
+
+- **License**: Functional Source License 1.1 (Apache 2.0 grant)、 2 年後 (2028-05-27) 自動 Apache 2.0 化
+- **GitHub repo**: `https://github.com/tomarai85/flote` で public
+- **API key / secret 漏洩防止**: `.env.example` skeleton + `.gitignore` 厳格化 + GitHub Push Protection ON + secret scanning ON (= push 前 + 後の二段防御)
+- **理由**:
+  - 個人開発の「ある日消える」 risk への guarantee
+  - 「中身読み取ってない」 を code で確認可能
+  - dev community 信用獲得 (= Phase 3 OSS 路線への布石)
+  - 商用 fork 2 年禁止で future paid 化と整合
+- 詳細は `04-moat.md` 「1. Source-available + delayed paywall による信頼性 moat」 参照
+
+### 確定: Monetize モデル = freemium-light + delayed paywall
+
+- **当面**: 完全無料 beta (= 全機能解放、 ダウンロード制限なし)
+- **将来**: 規模拡大 (= 口コミ / AI 検索 hit) が出てきたら ¥300 程度の安価 paid 化を検討
+- **既存 user grandfather 設計**: Phase 2 で決定、 現状未定 (= 「無理に paid 化はしない、 少人数なら無料のまま」 が default)
+- **payment 実装**: 当面なし、 paid 化決定後に Stripe / Gumroad 等の簡易課金
+- 詳細は `04-moat.md` 「2. Monetize 戦略」 参照
+
+### 確定: GitHub username の運用 = `tomarai85` (= 旧 `tomonoriarai2020-lgtm` から rename)
+
+- 旧 handle はフルネーム露出のため privacy 配慮で改名
+- X handle (@TomArai85) と consistency
+- 旧 repo URL は GitHub auto-redirect で動作継続、 ただし周辺 hardcoded URL (= LP / scripts / memory / plugins) は順次 update
+
 ## 更新履歴
 
 - 2026-04-19: 初期化。既存戦略スナップショットから未確定論点を抽出
 - 2026-04-19: 対話で確定した判断 (α路線、共有切り離し、C2C別プロダクトシード、N=1宿題) を「6. 対話で確定したこと」として追記
+- 2026-05-27: GitHub 公開 (FSL Source-available) + monetize モデル (freemium-light + delayed paywall) + handle rename (tomarai85) を「7. 対話で確定したこと」 として追記、 詳細は 04-moat.md
