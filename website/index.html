@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flote - 走り書きが、勝手に整理される</title>
+  <meta name="description" content="Option+Spaceで付箋が出る。思いついたことを書く。AIが構造化してくれる。macOS専用の無料メモアプリ。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='12' width='80' height='80' x='10' y='10' fill='%232dd4bf'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230a0a0f' font-family='Inter,sans-serif' font-weight='900'>F</text></svg>">
+</head>
+<body>
+
+  <!-- ===== Nav ===== -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="nav-logo">
+        <div class="logo-mark">F</div>
+        <span class="logo-text">Flote</span>
+        <span class="logo-badge">beta</span>
+        <span class="endorsed-tag">— a <a href="https://direct-homepage.vercel.app" target="_blank" rel="noopener">Direct</a> product</span>
+      </div>
+      <a href="#download" class="nav-cta">Download</a>
+    </div>
+  </nav>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-eyebrow">macOS native app -- free beta</p>
+        <h1>走り書きが、<br><span class="accent-text">勝手に整理される。</span></h1>
+        <p class="hero-sub">Option+Space で付箋が出る。思いついたことを書く。Organize ボタンを押す。AI が構造化してくれる。それだけ。</p>
+        <div class="hero-actions">
+          <a href="#download" class="btn-primary btn-large">無料でダウンロード</a>
+          <a href="#how" class="btn-ghost">使い方を見る</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>2秒</strong><span>で起動</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><strong>160px</strong><span>の付箋</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><strong>0円</strong><span>完全無料</span></div>
+        </div>
+      </div>
+      <!-- Floating note mockup -->
+      <div class="hero-visual">
+        <div class="mock-desktop">
+          <div class="mock-menubar">
+            <span class="mock-dots"><i></i><i></i><i></i></span>
+            <span class="mock-menu-text">Flote</span>
+          </div>
+          <div class="mock-screen">
+            <div class="mock-note" aria-hidden="true">
+              <div class="mock-note-bar">
+                <span class="mock-note-dot"></span>
+                <span class="mock-note-title">Organize</span>
+              </div>
+              <div class="mock-note-body">
+                <div class="mock-line heading">## MTGフィードバック</div>
+                <div class="mock-line sub">デザイン修正が最優先、金曜〆</div>
+                <div class="mock-line spacer"></div>
+                <div class="mock-line action">[ ] デザイン修正着手</div>
+                <div class="mock-line action">[ ] 修正後Slack共有</div>
+                <div class="mock-line action done">[&#10003;] 金曜までに完了報告</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Problem ===== -->
+  <section class="problem">
+    <div class="container">
+      <div class="problem-card">
+        <h2>こんな経験、ありませんか?</h2>
+        <div class="problem-grid">
+          <div class="problem-item">
+            <div class="problem-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <p><strong>朝の定例で頭が真っ白</strong><br>「何をして、なぜ重要で、どんな成果があるか」を構造化して伝えられない。上司の時間を奪ってしまう。</p>
+          </div>
+          <div class="problem-item">
+            <div class="problem-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><circle cx="12" cy="17" r=".5"/></svg>
+            </div>
+            <p><strong>修正指示がパンクする</strong><br>「どの部分に対するどんな修正か」を頭の中で整理できず、何から手をつけていいかわからなくなる。</p>
+          </div>
+          <div class="problem-item">
+            <div class="problem-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            </div>
+            <p><strong>NotionもObsidianも重すぎる</strong><br>整理する力がある人のためのツールは山ほどある。でも「そもそも整理できない自分」には使いこなせない。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Solution ===== -->
+  <section class="solution">
+    <div class="container">
+      <p class="section-eyebrow">Floteの答え</p>
+      <h2>整理する力がなくても、<br>整理された結果が手に入る。</h2>
+      <p class="section-sub">走り書きをAIが構造化。タイトル、要点、アクションリストに変換。<br>あなたは「書く」と「実行する」だけに集中できる。</p>
+    </div>
+  </section>
+
+  <!-- ===== Before / After ===== -->
+  <section class="before-after">
+    <div class="container">
+      <p class="section-eyebrow">Before &amp; After</p>
+      <h2>ボタン1つで、この差が出る</h2>
+
+      <!-- Example 1 -->
+      <div class="ba-pair">
+        <div class="ba-card ba-before">
+          <div class="ba-header">
+            <span class="ba-tag">走り書き</span>
+            <span class="ba-scenario">朝の定例前に書いたメモ</span>
+          </div>
+          <pre class="ba-text">mtgで言われたこと
+- デザイン直す
+- 金曜まで
+- あとSlackで共有
+なんか優先度高いらしい</pre>
+        </div>
+        <div class="ba-transform">
+          <div class="ba-arrow-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <span class="ba-label">Organize</span>
+        </div>
+        <div class="ba-card ba-after">
+          <div class="ba-header">
+            <span class="ba-tag tag-after">整理済み</span>
+          </div>
+          <pre class="ba-text"><b>## MTGフィードバック</b>
+
+<b>## 一言</b>
+デザイン修正が最優先、金曜〆
+
+<b>## アクション</b>
+<span class="check">[ ]</span> デザイン修正着手
+<span class="check">[ ]</span> 修正後Slack共有
+<span class="check">[ ]</span> 金曜までに完了報告</pre>
+        </div>
+      </div>
+
+      <!-- Example 2 -->
+      <div class="ba-pair">
+        <div class="ba-card ba-before">
+          <div class="ba-header">
+            <span class="ba-tag">走り書き</span>
+            <span class="ba-scenario">上司からの修正指示を受けた直後</span>
+          </div>
+          <pre class="ba-text">LP のヘッダー文言変える
+CTAボタンの色もう少し目立つやつ
+あと下の方のFAQ追加して
+SEO的にmetaもちゃんと書いて
+来週火曜のレビューまでに</pre>
+        </div>
+        <div class="ba-transform">
+          <div class="ba-arrow-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <span class="ba-label">Organize</span>
+        </div>
+        <div class="ba-card ba-after">
+          <div class="ba-header">
+            <span class="ba-tag tag-after">整理済み</span>
+          </div>
+          <pre class="ba-text"><b>## LP修正指示</b>
+
+<b>## 一言</b>
+4箇所修正、火曜レビュー〆
+
+<b>## アクション</b>
+<span class="check">[ ]</span> ヘッダー文言を差し替え
+<span class="check">[ ]</span> CTAボタン色を強調色に
+<span class="check">[ ]</span> FAQ セクション追加
+<span class="check">[ ]</span> meta description 記述
+
+<b>## 期限</b>
+来週火曜レビューまで</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== How it works ===== -->
+  <section class="how-it-works" id="how">
+    <div class="container">
+      <p class="section-eyebrow">How it works</p>
+      <h2>使い方は3つだけ</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-visual">
+            <div class="step-num">1</div>
+            <div class="step-key">
+              <kbd>Option</kbd><span>+</span><kbd>Space</kbd>
+            </div>
+          </div>
+          <h3>書く</h3>
+          <p>ショートカットキーで付箋が出現。どのアプリの上にも浮かぶ。思いついたことをそのまま書く。整理する必要はない。</p>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+        <div class="step">
+          <div class="step-visual">
+            <div class="step-num">2</div>
+            <div class="step-icon-wrap">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M12.2 11.8L11 13M12.2 6.2L11 5"/><circle cx="15" cy="9" r="3"/></svg>
+            </div>
+          </div>
+          <h3>整理する</h3>
+          <p>Organizeボタンを1回押す。AIがタイトル、要点、チェックボックス付きアクションリストに変換。気に入らなければCmd+Zで元に戻せる。</p>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+        <div class="step">
+          <div class="step-visual">
+            <div class="step-num">3</div>
+            <div class="step-icon-wrap">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+          </div>
+          <h3>実行する</h3>
+          <p>チェックボックスをクリックして消化。終わったらCmd+Wで閉じる。メモはGroupに自動保存され、いつでも振り返れる。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Features ===== -->
+  <section class="features">
+    <div class="container">
+      <p class="section-eyebrow">Features</p>
+      <h2>小さな付箋に、必要なもの全部</h2>
+      <div class="features-grid">
+        <div class="feature-card feature-highlight">
+          <div class="feature-icon-lg">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M12.2 11.8L11 13M12.2 6.2L11 5"/><circle cx="15" cy="9" r="3"/></svg>
+          </div>
+          <h4>AI Organize</h4>
+          <p>走り書きをタイトル、要点、アクションに構造化。短いメモはローカルAI (Ollama)、長いメモはClaude APIで処理。</p>
+        </div>
+        <div class="feature-card">
+          <h4>学習型AI分類</h4>
+          <p>メモを使うほど、あなたの分類パターンをAIが学習。自動でGroupに振り分けてくれる。</p>
+        </div>
+        <div class="feature-card">
+          <h4>チェックボックス</h4>
+          <p>Organize後のアクションリストはクリックでチェック可能。タスク管理アプリ不要。</p>
+        </div>
+        <div class="feature-card">
+          <h4>Undo対応</h4>
+          <p>Organizeの結果が気に入らなければCmd+Zで元の走り書きに戻せる。やり直し自由。</p>
+        </div>
+        <div class="feature-card">
+          <h4>Inbox一括分類</h4>
+          <p>溜まった未分類メモをまとめてAI分類。ボタン1つでInboxを空にできる。</p>
+        </div>
+        <div class="feature-card">
+          <h4>カスタムショートカット</h4>
+          <p>新規ノート、Groups表示、Archiveのキーバインドを自由に変更可能。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Comparison ===== -->
+  <section class="comparison">
+    <div class="container">
+      <p class="section-eyebrow">Why Flote</p>
+      <h2>既存ツールとの違い</h2>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="compare-flote">Flote</th>
+              <th>Apple Notes</th>
+              <th>Notion</th>
+              <th>Obsidian</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>起動速度</td>
+              <td class="compare-flote"><strong>2秒</strong> (常駐)</td>
+              <td>3-5秒</td>
+              <td>5-10秒</td>
+              <td>3-5秒</td>
+            </tr>
+            <tr>
+              <td>AI自動整理</td>
+              <td class="compare-flote"><strong>ボタン1つ</strong></td>
+              <td>一部 (Apple Intelligence)</td>
+              <td>Notion AI (別課金)</td>
+              <td>プラグイン依存</td>
+            </tr>
+            <tr>
+              <td>常駐フローティング</td>
+              <td class="compare-flote"><strong>対応</strong></td>
+              <td>非対応</td>
+              <td>非対応</td>
+              <td>非対応</td>
+            </tr>
+            <tr>
+              <td>学習する?</td>
+              <td class="compare-flote"><strong>分類を学習</strong></td>
+              <td>しない</td>
+              <td>しない</td>
+              <td>しない</td>
+            </tr>
+            <tr>
+              <td>構造化が苦手な人向け</td>
+              <td class="compare-flote"><strong>設計思想</strong></td>
+              <td>想定外</td>
+              <td>想定外</td>
+              <td>想定外</td>
+            </tr>
+            <tr>
+              <td>価格</td>
+              <td class="compare-flote"><strong>無料</strong></td>
+              <td>無料</td>
+              <td>$8-10/月</td>
+              <td>無料 (一部有料)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Trust ===== -->
+  <section class="trust">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-item">
+          <div class="trust-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <h4>データはMacの中だけ</h4>
+          <p>メモはすべてローカルに保存。クラウドに送信されない。AI整理時のみAPIと通信 (ローカルAI使用時は完全オフライン)。</p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h4>ネイティブmacOSアプリ</h4>
+          <p>SwiftUI + AppKitで構築。Electronではない。メモリ使用量が少なく、Macのバッテリーに優しい。</p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+          </div>
+          <h4>フォーカスを奪わない</h4>
+          <p>付箋はデスクトップに浮くだけ。他のアプリからフォーカスを奪わない設計。作業を中断させない。</p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          </div>
+          <h4>色もフォントも選べる</h4>
+          <p>11色のテーマと6書体から選択。自分好みの付箋にカスタマイズできる。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Download ===== -->
+  <section class="download" id="download">
+    <div class="container">
+      <div class="dl-card">
+        <p class="section-eyebrow">Download</p>
+        <h2>今すぐ試してみる</h2>
+
+        <!-- ===== OS Toggle (auto-detect + manual override) ===== -->
+        <!-- Mac is the SSR-default to prevent FOUC; JS may swap to Windows on first paint -->
+        <div class="os-toggle" role="tablist" aria-label="OS 選択">
+          <button class="os-toggle-btn is-active" data-os="mac" role="tab" aria-selected="true" aria-controls="os-section-mac">macOS</button>
+          <button class="os-toggle-btn" data-os="windows" role="tab" aria-selected="false" aria-controls="os-section-windows">
+            Windows<span class="os-toggle-badge">準備中</span>
+          </button>
+        </div>
+
+        <!-- ===== macOS section ===== -->
+        <div class="os-section os-section-mac is-active" id="os-section-mac" role="tabpanel">
+        <p class="dl-sub">macOS 14 (Sonoma) 以降 ・ Apple Silicon (M1/M2/M3/M4) ・ 完全無料</p>
+
+        <!-- ===== Primary install method: one curl command ===== -->
+        <div class="install-hero">
+          <div class="install-hero-meta">
+            <span class="install-hero-step">STEP 1</span>
+            <span class="install-hero-time">所要 約2分</span>
+          </div>
+          <div class="install-hero-title">ターミナルに貼って Enter するだけ</div>
+          <div class="install-hero-cmd">
+<pre><code id="install-cmd-text">curl -fsSL -o /tmp/Flote.zip https://flote-app.vercel.app/Flote.zip && \
+  unzip -oq /tmp/Flote.zip -d /Applications/ && \
+  open /Applications/Flote.app</code></pre>
+            <button class="install-hero-copy" id="copy-curl" aria-live="polite" onclick="
+              if (this.dataset.busy === '1') return;
+              this.dataset.busy = '1';
+              const btn = this;
+              const node = document.getElementById('install-cmd-text');
+              const text = node.textContent;
+              const restore = () => { btn.dataset.busy = ''; btn.textContent = 'コマンドをコピー'; };
+              const flash = (msg, ms) => { btn.textContent = msg; setTimeout(restore, ms); };
+              const fallback = () => {
+                try {
+                  const range = document.createRange();
+                  range.selectNodeContents(node);
+                  const sel = window.getSelection();
+                  sel.removeAllRanges();
+                  sel.addRange(range);
+                  flash('上を選択しました。Cmd+C でコピー', 4000);
+                } catch (e) {
+                  flash('コピー失敗。手動で選択してください', 4000);
+                }
+              };
+              if (navigator.clipboard &amp;&amp; window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                  .then(() => flash('コピーしました', 2000))
+                  .catch(fallback);
+              } else {
+                fallback();
+              }
+            ">コマンドをコピー</button>
+          </div>
+          <div class="install-hero-flow">
+            <span class="install-hero-flow-item">1. ダウンロード</span>
+            <span class="install-hero-flow-arrow">-&gt;</span>
+            <span class="install-hero-flow-item">2. Applications に展開</span>
+            <span class="install-hero-flow-arrow">-&gt;</span>
+            <span class="install-hero-flow-item">3. 起動</span>
+          </div>
+        </div>
+
+        <!-- After install: what happens -->
+        <div class="install-launch">
+          <div class="install-launch-title">STEP 2 ・ 起動を確認</div>
+          <ul class="install-launch-list">
+            <li>画面右上のメニューバーに <strong>Flote</strong> アイコンが出現</li>
+            <li><kbd>Option</kbd> + <kbd>Space</kbd> で付箋が浮かぶ</li>
+            <li>書いて Organize ボタンで AI 整理 (Ollama セットアップ後)</li>
+          </ul>
+        </div>
+
+        <!-- FAQ: explain terminal & why -->
+        <details class="install-faq">
+          <summary>ターミナルって何? このコマンド貼って大丈夫?</summary>
+          <div class="install-faq-body">
+            <p><strong>ターミナル.app</strong> は Mac に最初から入っているアプリです。Spotlight (<kbd>⌘</kbd> + <kbd>Space</kbd>) で「ターミナル」と検索 → Enter で開きます。インストールも追加設定も不要。</p>
+            <p>上のコマンドがやっているのは「公開リポジトリから zip を取って Applications に置き、起動する」だけ。隠れた処理はありません。コマンド全文を見れば全工程が読めます。</p>
+          </div>
+        </details>
+
+        <!-- FAQ: why not browser DL -->
+        <details class="install-faq">
+          <summary>「開発元を確認できません」と警告が出るのはなぜ?</summary>
+          <div class="install-faq-body">
+            <p>このアプリは Apple Developer Program (年99ドル) への登録と Apple Notarization をテスター段階では未取得のため、初回起動時に macOS Gatekeeper が「開発元を確認できません」 と警告します。 これは macOS の通常の保護動作です。</p>
+            <p><strong>正規の手順で警告を抜けるには:</strong> Finder で <code>/Applications/Flote.app</code> を <kbd>Control</kbd> + クリック → 「開く」 を選択 → 「開く」 ボタンで確認。 これによりユーザーが明示的に許可した実行として記録され、 次回以降は警告なしで起動できます。</p>
+            <p>正式署名 + 公証版 (警告なしでダブルクリックで起動) は Apple Developer Program 加入後に切り替えます。 それまでは上記の Control+クリック 手順を推奨します。</p>
+            <p style="margin-top: 12px;">ブラウザで取りたい場合は <a href="./Flote.zip" download class="install-faq-direct">Flote.zip を直接ダウンロード</a> も用意しています (同じく Control+クリック → 開く で初回許可)。</p>
+          </div>
+        </details>
+
+        <!-- AI setup info -->
+        <div class="dl-info">
+          <div class="dl-info-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          </div>
+          <div>
+            <strong>AI Organize 機能を使うには (任意・5分)</strong>
+            <p>ローカル AI (Ollama) でメモを整理する場合のみ必要。手書きメモ・チェックリスト・グループ化だけなら Ollama なしでも動きます。</p>
+            <ol class="dl-info-list">
+              <li><a href="https://ollama.com/download/mac" target="_blank">ollama.com</a> から Ollama をダウンロード</li>
+              <li>Ollama を起動 (メニューバーにアイコンが出る)</li>
+              <li>ターミナルで <code>ollama pull gemma3</code> を実行</li>
+            </ol>
+          </div>
+        </div>
+        </div><!-- /.os-section-mac -->
+
+        <!-- ===== Windows section (Coming Soon placeholder) ===== -->
+        <div class="os-section os-section-windows" id="os-section-windows" role="tabpanel" hidden>
+          <p class="dl-sub">Windows 10 / 11 ・ 完全無料 ・ 開発中</p>
+
+          <div class="install-hero install-hero-coming-soon">
+            <div class="install-hero-meta">
+              <span class="install-hero-step">準備中</span>
+              <span class="install-hero-time">完成次第ここに公開</span>
+            </div>
+            <div class="install-hero-title">Windows 版を Flutter で開発中です</div>
+            <div class="install-hero-coming-body">
+              <p>Mac と同じく <strong>PowerShell ワンライナー</strong> で警告ダイアログなしのインストールを予定しています (<code>Invoke-WebRequest</code> で取得すると Mark of the Web が付かないため SmartScreen 警告が出ません)。</p>
+              <p>下記は <strong>完成時に動く予定のコマンド</strong> です。今はまだダウンロード先のファイルが存在しないため動きません。完成時にこのページが自動的に更新されます。</p>
+            </div>
+            <div class="install-hero-cmd install-hero-cmd-disabled" aria-disabled="true">
+<pre><code id="install-cmd-text-win"># 完成時のインストールコマンド (現時点ではまだ動きません)
+Invoke-WebRequest -Uri "https://flote-app.vercel.app/Flote-windows.zip" -OutFile "$env:TEMP\Flote.zip"; Expand-Archive -Force "$env:TEMP\Flote.zip" -DestinationPath "$env:LOCALAPPDATA\Flote"; Start-Process "$env:LOCALAPPDATA\Flote\Flote.exe"</code></pre>
+            </div>
+            <div class="install-hero-flow">
+              <span class="install-hero-flow-item">1. ダウンロード</span>
+              <span class="install-hero-flow-arrow">-&gt;</span>
+              <span class="install-hero-flow-item">2. LOCALAPPDATA に展開</span>
+              <span class="install-hero-flow-arrow">-&gt;</span>
+              <span class="install-hero-flow-item">3. SmartScreen 警告を回避</span>
+              <span class="install-hero-flow-arrow">-&gt;</span>
+              <span class="install-hero-flow-item">4. 起動</span>
+            </div>
+          </div>
+
+          <div class="install-launch">
+            <div class="install-launch-title">Windows 版で予定している機能</div>
+            <ul class="install-launch-list">
+              <li>システムトレイ常駐 (Mac のメニューバー相当)</li>
+              <li>グローバルホットキー (<kbd>Win</kbd> + <kbd>Space</kbd> 等で付箋出現)</li>
+              <li>Mac 版と同じ AI Organize / Groups / 学習型分類</li>
+              <li>Mac との設定同期は将来検討</li>
+            </ul>
+          </div>
+
+          <details class="install-faq">
+            <summary>いつ完成しますか?</summary>
+            <div class="install-faq-body">
+              <p>Flutter (Dart) で開発中です。Sprint 1 (基盤構築) が現在進行中で、Sprint 6 (配布パッケージ化) で公開予定。Mac 版の検証フェーズと並行で進めています。完成時にこのページが自動的に更新されるので、定期的にチェックしてみてください。</p>
+            </div>
+          </details>
+
+          <details class="install-faq">
+            <summary>なぜ Windows でも PowerShell?</summary>
+            <div class="install-faq-body">
+              <p>ブラウザでダウンロードすると Windows が <strong>Mark of the Web (MOTW)</strong> 属性を付与し、SmartScreen が「Windows によって PC が保護されました」警告を出します。<code>Invoke-WebRequest</code> で取得すると MOTW が付かないため、警告自体が出ません (Mac の <code>curl</code> と同じ哲学)。</p>
+              <p>正式な Authenticode 署名 (年 $300-600) を取得すれば PowerShell なしでも警告は出ませんが、テスター段階では費用を抑えています。</p>
+            </div>
+          </details>
+        </div><!-- /.os-section-windows -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== OS Toggle Script ===== -->
+  <script>
+    (function() {
+      function detectOS() {
+        var ua = (navigator.userAgent || '').toLowerCase();
+        var platform = (navigator.platform || '').toLowerCase();
+        if (ua.indexOf('windows') !== -1 || platform.indexOf('win') !== -1) return 'windows';
+        if (ua.indexOf('mac') !== -1 || platform.indexOf('mac') !== -1) return 'mac';
+        return 'mac';
+      }
+
+      function setActive(os) {
+        var btns = document.querySelectorAll('.os-toggle-btn');
+        var sections = document.querySelectorAll('.os-section');
+        for (var i = 0; i < btns.length; i++) {
+          var match = btns[i].dataset.os === os;
+          btns[i].classList.toggle('is-active', match);
+          btns[i].setAttribute('aria-selected', match ? 'true' : 'false');
+        }
+        for (var j = 0; j < sections.length; j++) {
+          var s = sections[j];
+          var on = s.classList.contains('os-section-' + os);
+          s.classList.toggle('is-active', on);
+          if (on) { s.removeAttribute('hidden'); } else { s.setAttribute('hidden', ''); }
+        }
+        try { localStorage.setItem('flote-os-tab', os); } catch (e) {}
+      }
+
+      function init() {
+        var stored = null;
+        try { stored = localStorage.getItem('flote-os-tab'); } catch (e) {}
+        var initial = stored || detectOS();
+        setActive(initial);
+
+        var btns = document.querySelectorAll('.os-toggle-btn');
+        for (var i = 0; i < btns.length; i++) {
+          (function(btn) {
+            btn.addEventListener('click', function() { setActive(btn.dataset.os); });
+          })(btns[i]);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="logo-mark logo-mark-sm">F</div>
+        <span>Flote beta</span>
+        <span style="margin-left: 8px; font-size: 12px; color: var(--text-3); font-weight: 400;">
+          — a <a href="https://direct-homepage.vercel.app" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--border);">Direct</a> product
+        </span>
+      </div>
+      <p class="footer-copy">Built with SwiftUI. Powered by AI. Designed for humans who think faster than they organize.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Reveal IO + Stagger (= Apple-tier 70ms cascade) ===== -->
+  <script>
+    (function () {
+      var prefersReducedMotion = false;
+      try { prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      if (prefersReducedMotion) return;
+      var revealTargets = document.querySelectorAll('.problem-card, .ba-pair, .step, .feature-card, .compare-table-wrap, .trust-grid, .dl-card');
+      revealTargets.forEach(function (el) { el.setAttribute('data-reveal', ''); });
+      var staggerParents = document.querySelectorAll('.problem-grid, .features-grid, .trust-grid, .steps-grid');
+      staggerParents.forEach(function (parent) {
+        parent.setAttribute('data-reveal-stagger', '');
+        Array.prototype.forEach.call(parent.children, function (c, i) { c.style.setProperty('--stagger-i', i); });
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      document.querySelectorAll('[data-reveal], [data-reveal-stagger]').forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+
+</body>
+</html>

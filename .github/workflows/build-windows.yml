@@ -1,0 +1,98 @@
+# Flote Sprint 6 生成物
+# 用途: GitHub Actions で Windows 向けリリースビルドと Zip 化を自動化する
+
+name: Build Windows
+
+on:
+  # タグ push 時は配布向けの Windows ビルドを自動で作る
+  push:
+    tags: ['v*']
+
+  # 手動実行時は必要に応じてバージョン文字列を上書きできる
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'バージョン文字列 (例 1.0.0)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    name: Windows Release
+    runs-on: windows-latest
+
+    # private repo でも最小権限で checkout できる設定にする
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: apps/flutter
+
+    steps:
+      # リポジトリを取得して Flutter プロジェクトをビルド可能にする
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Flutter 3.41 stable をセットアップし、依存キャッシュを有効化する
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: 'stable'
+          cache: true
+
+      # 依存取得を先に走らせて後続ステップの前提をそろえる
+      - name: Flutter pub get
+        run: flutter pub get
+
+      # 静的解析で基本的な問題を早期に検出する
+      - name: Flutter analyze
+        run: flutter analyze
+
+      # ユニットテストを実行して回帰を検出する
+      - name: Flutter test
+        run: flutter test
+
+      # Windows 向けの release ビルドを作成する
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      # 手動入力、タグ名、pubspec.yaml の順で配布バージョンを解決する
+      - name: Extract version
+        id: ver
+        shell: pwsh
+        run: |
+          if ('${{ github.event.inputs.version }}') {
+            $v = '${{ github.event.inputs.version }}'
+          } elseif ('${{ github.ref_type }}' -eq 'tag') {
+            $v = '${{ github.ref_name }}' -replace '^v',''
+          } else {
+            $v = (Get-Content pubspec.yaml | Select-String '^version:' | ForEach-Object { ($_ -split '\s+')[1] } | Select-Object -First 1) -split '\+' | Select-Object -First 1
+          }
+          echo "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "バージョン: $v"
+
+      # Release 配下を配布用ディレクトリへコピーし、Zip 化してハッシュを出す
+      - name: Package as Zip
+        shell: pwsh
+        run: |
+          $v = '${{ steps.ver.outputs.version }}'
+          $dst = "dist/flote-windows-v$v"
+          if (Test-Path $dst) {
+            Remove-Item -Recurse -Force $dst
+          }
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          Copy-Item -Recurse -Force "build/windows/x64/runner/Release/*" $dst
+          $zip = "dist/flote-windows-v$v.zip"
+          if (Test-Path $zip) { Remove-Item $zip }
+          Compress-Archive -Path "$dst/*" -DestinationPath $zip
+          Get-FileHash $zip -Algorithm SHA256 | Format-List
+
+      # 生成した Zip を artifact として保持し、後続確認や配布に使えるようにする
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flote-windows-v${{ steps.ver.outputs.version }}
+          path: apps/flutter/dist/flote-windows-v${{ steps.ver.outputs.version }}.zip
+          retention-days: 30

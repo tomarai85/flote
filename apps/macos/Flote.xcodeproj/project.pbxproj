@@ -1,0 +1,470 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F10000001 /* FloteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000011 /* FloteApp.swift */; };
+		1E560B3A83794BE98165B76E /* AppFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC62D1C3F5144FBB80A90A05 /* AppFont.swift */; };
+		075BE79570464E119316AA12 /* DevSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0684E91D7147E693C19F59 /* DevSecrets.swift */; };
+		F752875320DB438A9B803864 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97B7E17AF9374876A68599DA /* KeychainHelper.swift */; };
+		7BDB8330D9F449A395D24F94 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F428869BD21A478ABBC18995 /* SettingsWindowController.swift */; };
+		8FD5DC78B31A4D739ACECB67 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1823BCA98B644039AE1C1CEE /* SettingsView.swift */; };
+		8E33315BE57C410CB72BF76F /* PaperCurlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24EC9D1163384082BD89C35D /* PaperCurlView.swift */; };
+		F10000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000012 /* AppDelegate.swift */; };
+		F10000003 /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000013 /* FloatingPanel.swift */; };
+		F10000004 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000014 /* NoteView.swift */; };
+		F10000005 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000015 /* MenuBarView.swift */; };
+		F10000006 /* GoldenRatio.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000016 /* GoldenRatio.swift */; };
+		F10000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F10000017 /* Assets.xcassets */; };
+		F10000020 /* StickyNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000021 /* StickyNote.swift */; };
+		F10000022 /* NoteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000023 /* NoteManager.swift */; };
+		F10000024 /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000025 /* PersistenceService.swift */; };
+		F10000026 /* PanelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000027 /* PanelManager.swift */; };
+		F10000028 /* RichTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000029 /* RichTextEditor.swift */; };
+		F1000002A /* RichTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000002B /* RichTextStorage.swift */; };
+		F1000002C /* NoteToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000002D /* NoteToolbar.swift */; };
+		F1000002E /* StowAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000002F /* StowAnimator.swift */; };
+		F10000030 /* MiniNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000031 /* MiniNoteView.swift */; };
+		F10000032 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000033 /* HotkeyService.swift */; };
+		F10000034 /* ShapeAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000035 /* ShapeAnnotation.swift */; };
+		F10000036 /* ShapeOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000037 /* ShapeOverlayView.swift */; };
+		F10000038 /* OrganizeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000039 /* OrganizeService.swift */; };
+		F10000101 /* ShortcutNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000100 /* ShortcutNames.swift */; };
+		F10000102 /* WALFileIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000103 /* WALFileIO.swift */; };
+		F10000110 /* NoteEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000111 /* NoteEncryption.swift */; };
+		F10000200 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = F10000202 /* KeyboardShortcuts */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F10000011 /* FloteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloteApp.swift; sourceTree = "<group>"; };
+		F10000012 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		F10000013 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
+		F10000014 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
+		BC62D1C3F5144FBB80A90A05 /* AppFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFont.swift; sourceTree = "<group>"; };
+		FA0684E91D7147E693C19F59 /* DevSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevSecrets.swift; sourceTree = "<group>"; };
+		97B7E17AF9374876A68599DA /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		F428869BD21A478ABBC18995 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		1823BCA98B644039AE1C1CEE /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		24EC9D1163384082BD89C35D /* PaperCurlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperCurlView.swift; sourceTree = "<group>"; };
+		F10000015 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		F10000016 /* GoldenRatio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoldenRatio.swift; sourceTree = "<group>"; };
+		F10000017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F10000018 /* Flote.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flote.entitlements; sourceTree = "<group>"; };
+		F10000019 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F1000001A /* Flote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000021 /* StickyNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyNote.swift; sourceTree = "<group>"; };
+		F10000023 /* NoteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteManager.swift; sourceTree = "<group>"; };
+		F10000025 /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
+		F10000027 /* PanelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelManager.swift; sourceTree = "<group>"; };
+		F10000029 /* RichTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichTextEditor.swift; sourceTree = "<group>"; };
+		F1000002B /* RichTextStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichTextStorage.swift; sourceTree = "<group>"; };
+		F1000002D /* NoteToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteToolbar.swift; sourceTree = "<group>"; };
+		F1000002F /* StowAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StowAnimator.swift; sourceTree = "<group>"; };
+		F10000031 /* MiniNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniNoteView.swift; sourceTree = "<group>"; };
+		F10000033 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
+		F10000035 /* ShapeAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeAnnotation.swift; sourceTree = "<group>"; };
+		F10000037 /* ShapeOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeOverlayView.swift; sourceTree = "<group>"; };
+		F10000039 /* OrganizeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganizeService.swift; sourceTree = "<group>"; };
+		F10000100 /* ShortcutNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutNames.swift; sourceTree = "<group>"; };
+		F10000103 /* WALFileIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WALFileIO.swift; sourceTree = "<group>"; };
+		F10000111 /* NoteEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEncryption.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F10000060 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000200 /* KeyboardShortcuts in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F10000070 = {
+			isa = PBXGroup;
+			children = (
+				F10000071 /* Flote */,
+				F10000073 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F10000071 /* Flote */ = {
+			isa = PBXGroup;
+			children = (
+				F10000011 /* FloteApp.swift */,
+				F10000012 /* AppDelegate.swift */,
+				F10000013 /* FloatingPanel.swift */,
+				F10000014 /* NoteView.swift */,
+				BC62D1C3F5144FBB80A90A05 /* AppFont.swift */,
+				FA0684E91D7147E693C19F59 /* DevSecrets.swift */,
+				97B7E17AF9374876A68599DA /* KeychainHelper.swift */,
+				F428869BD21A478ABBC18995 /* SettingsWindowController.swift */,
+				1823BCA98B644039AE1C1CEE /* SettingsView.swift */,
+				24EC9D1163384082BD89C35D /* PaperCurlView.swift */,
+				F10000015 /* MenuBarView.swift */,
+				F10000016 /* GoldenRatio.swift */,
+				F10000021 /* StickyNote.swift */,
+				F10000023 /* NoteManager.swift */,
+				F10000025 /* PersistenceService.swift */,
+				F10000027 /* PanelManager.swift */,
+				F10000029 /* RichTextEditor.swift */,
+				F1000002B /* RichTextStorage.swift */,
+				F1000002D /* NoteToolbar.swift */,
+				F1000002F /* StowAnimator.swift */,
+				F10000031 /* MiniNoteView.swift */,
+				F10000033 /* HotkeyService.swift */,
+				F10000035 /* ShapeAnnotation.swift */,
+				F10000037 /* ShapeOverlayView.swift */,
+				F10000039 /* OrganizeService.swift */,
+				F10000100 /* ShortcutNames.swift */,
+				F10000103 /* WALFileIO.swift */,
+				F10000111 /* NoteEncryption.swift */,
+				F10000017 /* Assets.xcassets */,
+				F10000018 /* Flote.entitlements */,
+				F10000019 /* Info.plist */,
+			);
+			path = Flote;
+			sourceTree = "<group>";
+		};
+		F10000073 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F1000001A /* Flote.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000050 /* Flote */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000090 /* Build configuration list for PBXNativeTarget "Flote" */;
+			buildPhases = (
+				F10000080 /* Sources */,
+				F10000060 /* Frameworks */,
+				F10000081 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Flote;
+			packageProductDependencies = (
+				F10000202 /* KeyboardShortcuts */,
+			);
+			productName = Flote;
+			productReference = F1000001A /* Flote.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F10000040 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					F10000050 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = F10000092 /* Build configuration list for PBXProject "Flote" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F10000070;
+			packageReferences = (
+				F10000201 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+			);
+			productRefGroup = F10000073 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000050 /* Flote */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F10000081 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000007 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F10000080 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000001 /* FloteApp.swift in Sources */,
+				F10000002 /* AppDelegate.swift in Sources */,
+				F10000003 /* FloatingPanel.swift in Sources */,
+				F10000004 /* NoteView.swift in Sources */,
+				1E560B3A83794BE98165B76E /* AppFont.swift in Sources */,
+				075BE79570464E119316AA12 /* DevSecrets.swift in Sources */,
+				F752875320DB438A9B803864 /* KeychainHelper.swift in Sources */,
+				7BDB8330D9F449A395D24F94 /* SettingsWindowController.swift in Sources */,
+				8FD5DC78B31A4D739ACECB67 /* SettingsView.swift in Sources */,
+				8E33315BE57C410CB72BF76F /* PaperCurlView.swift in Sources */,
+				F10000005 /* MenuBarView.swift in Sources */,
+				F10000006 /* GoldenRatio.swift in Sources */,
+				F10000020 /* StickyNote.swift in Sources */,
+				F10000022 /* NoteManager.swift in Sources */,
+				F10000024 /* PersistenceService.swift in Sources */,
+				F10000026 /* PanelManager.swift in Sources */,
+				F10000028 /* RichTextEditor.swift in Sources */,
+				F1000002A /* RichTextStorage.swift in Sources */,
+				F1000002C /* NoteToolbar.swift in Sources */,
+				F1000002E /* StowAnimator.swift in Sources */,
+				F10000030 /* MiniNoteView.swift in Sources */,
+				F10000032 /* HotkeyService.swift in Sources */,
+				F10000034 /* ShapeAnnotation.swift in Sources */,
+				F10000036 /* ShapeOverlayView.swift in Sources */,
+				F10000038 /* OrganizeService.swift in Sources */,
+				F10000101 /* ShortcutNames.swift in Sources */,
+				F10000102 /* WALFileIO.swift in Sources */,
+				F10000110 /* NoteEncryption.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F1000000A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F1000000A1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		F1000000B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Flote/Flote.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Flote/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tomtim.Flote";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F1000000B1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Flote/Flote.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Flote/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tomtim.Flote";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000090 /* Build configuration list for PBXNativeTarget "Flote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F1000000B0 /* Debug */,
+				F1000000B1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000092 /* Build configuration list for PBXProject "Flote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F1000000A0 /* Debug */,
+				F1000000A1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F10000201 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F10000202 /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F10000201 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+	};
+	rootObject = F10000040 /* Project object */;
+}

@@ -1,0 +1,54 @@
+name: flote_desktop
+description: "Flote - クロスプラットフォーム付箋メモアプリ (Windows + macOS)"
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # UI と状態管理
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  flutter_quill: ^11.0.0
+  # データモデルと通信
+  json_annotation: ^4.9.0
+  http: ^1.2.2
+  # デスクトップ連携
+  desktop_multi_window: ^0.2.1
+  tray_manager: ^0.5.0
+  hotkey_manager: ^0.2.3
+  window_manager: ^0.4.3
+  # ストレージとパス
+  flutter_secure_storage: ^9.2.4
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Lint とコード生成
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.3
+  json_serializable: ^6.8.0
+  # アプリアイコン生成
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+
+flutter_launcher_icons:
+  image_path: "assets/icons/app_icon.png"
+  macos:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"

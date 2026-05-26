@@ -1,0 +1,66 @@
+# ====== Development secrets (= must never commit) ======
+# Hardcoded API keys for local dev; glob so the rule survives any restructure.
+**/DevSecrets.swift
+
+# Generic env files (= production / staging / personal credentials)
+.env
+.env.*
+!.env.example
+
+# Common credential file extensions
+*.key
+*.pem
+*.p12
+*.p8
+*.mobileprovision
+*.cer
+
+# ====== Build / tooling local state ======
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Flutter (= apps/flutter/)
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub/
+**/Flutter/ephemeral/
+**/build/
+
+# Node / web tooling
+node_modules/
+dist/
+.next/
+.cache/
+
+# Vercel CLI local linkage (= projectId / orgId; not strictly secret but project-local)
+.vercel/
+
+# ====== Editor / OS noise ======
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# ====== Harness backups (= pre-edit safety copies; never publish) ======
+*.bak
+*.bak.*
+
+# ====== Internal development harness state (= never publish) ======
+# .harness/ holds spec / progress / sprint feedback / security audit notes /
+# API spending discussion. Useful locally for the development loop, but not
+# part of the public source-available release.
+.harness/
+
+# ====== Stale distribution archives at repo root (= rebuilt in Phase 2) ======
+/dist/
+
+# ====== AI dev tool caches (= optional, but commonly added) ======
+.aider*
+.claude/
+.codex/
