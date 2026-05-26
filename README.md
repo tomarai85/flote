@@ -1,13 +1,19 @@
 # Flote
 
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](./LICENSE.md)
+[![Platform: macOS](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey.svg)](https://flote-app.vercel.app)
+[![Status: beta](https://img.shields.io/badge/status-free%20beta-2dd4bf.svg)](https://flote-app.vercel.app)
+[![A Direct product](https://img.shields.io/badge/-a%20Direct%20product-0a0a0f.svg)](https://direct-homepage.vercel.app)
+
 > **走り書きが、勝手に整理される。**
 >
 > Option+Space で付箋が浮かぶ。思いついたことをそのまま書く。Organize ボタンを 1 回押す。AI がタイトル・要点・チェックリストに変換する。それだけ。
 
-- 公開リポジトリ: https://github.com/tomarai85/flote (= Phase 1 公開予定)
-- 公式 LP: https://flote-website.vercel.app
+- 公開リポジトリ: https://github.com/tomarai85/flote
+- 公式 LP: https://flote-app.vercel.app (= スクリーンショット + 詳細 install 手順 + Roadmap)
 - 親 brand: [a Direct product](https://direct-homepage.vercel.app)
 - License: [FSL-1.1-ALv2](./LICENSE.md) (= 2 年後 Apache 2.0 化)
+- Security: [脆弱性の報告は SECURITY.md](./SECURITY.md)
 - Status: **無料 beta** / macOS 14 (Sonoma) 以降 / Apple Silicon
 
 [English README](./README.en.md)

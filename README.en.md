@@ -1,13 +1,19 @@
 # Flote
 
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](./LICENSE.md)
+[![Platform: macOS](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey.svg)](https://flote-app.vercel.app)
+[![Status: beta](https://img.shields.io/badge/status-free%20beta-2dd4bf.svg)](https://flote-app.vercel.app)
+[![A Direct product](https://img.shields.io/badge/-a%20Direct%20product-0a0a0f.svg)](https://direct-homepage.vercel.app)
+
 > **Scribbles, auto-organized.**
 >
 > Hit Option+Space. A 160px sticky note floats over whatever you were doing. Type whatever you were thinking. Press Organize. AI turns it into a title, a one-liner, and a checkbox action list. That's the whole product.
 
-- Repository: https://github.com/tomarai85/flote (= going public in Phase 1)
-- Website: https://flote-website.vercel.app
+- Repository: https://github.com/tomarai85/flote
+- Website: https://flote-app.vercel.app (= screenshots, full install guide, roadmap)
 - Parent brand: [a Direct product](https://direct-homepage.vercel.app)
 - License: [FSL-1.1-ALv2](./LICENSE.md) (= auto-converts to Apache 2.0 after 2 years)
+- Security: [report vulnerabilities via SECURITY.md](./SECURITY.md)
 - Status: **free beta** / macOS 14 (Sonoma)+ / Apple Silicon
 
 [日本語 README](./README.md)
