@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 質問 / Discussion
+    url: https://github.com/tomarai85/flote/discussions
+    about: bug でも feature でもない一般的な質問 / 雑談はこちら (= discussion 機能、 有効化後)
+  - name: Security 脆弱性 (= 公開 issue 禁止)
+    url: https://github.com/tomarai85/flote/blob/main/SECURITY.md
+    about: 脆弱性は private channel 経由でお願いします
+  - name: 公式 LP
+    url: https://flote-app.vercel.app
+    about: インストール手順 / Roadmap / 開発状況
