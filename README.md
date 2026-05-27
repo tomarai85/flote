@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://flote-app.vercel.app">
+    <img src="./website/og-image.svg" alt="Flote — 走り書きが、勝手に整理される" width="640">
+  </a>
+</p>
+
 # Flote
 
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](./LICENSE.md)
