@@ -491,20 +491,78 @@ SEO的にmetaもちゃんと書いて
           </div>
         </details>
 
-        <!-- AI setup info -->
-        <div class="dl-info">
-          <div class="dl-info-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <!-- AI setup: 2 option 比較 (= Tom 「相手に分かるように」 directive 2026-05-27) -->
+        <div class="ai-setup">
+          <div class="ai-setup-header">
+            <strong>AI Organize 機能 = 2 つの選択肢から 1 つ</strong>
+            <p class="ai-setup-sub">手書きメモ / チェックリスト / グループ化だけなら AI なしでも動く。 AI で「タイトル + 要点 + アクション」 に整理したい時のみ どちらか 1 つを設定。</p>
           </div>
-          <div>
-            <strong>AI Organize 機能を使うには (任意・5分)</strong>
-            <p>ローカル AI (Ollama) でメモを整理する場合のみ必要。手書きメモ・チェックリスト・グループ化だけなら Ollama なしでも動きます。</p>
-            <ol class="dl-info-list">
-              <li><a href="https://ollama.com/download/mac" target="_blank">ollama.com</a> から Ollama をダウンロード</li>
-              <li>Ollama を起動 (メニューバーにアイコンが出る)</li>
-              <li>ターミナルで <code>ollama pull gemma3</code> を実行</li>
-            </ol>
+
+          <div class="ai-setup-grid">
+            <!-- Option A: Local Ollama -->
+            <div class="ai-option ai-option-a">
+              <div class="ai-option-tag">Option A ・ おすすめ</div>
+              <h3>Local Ollama (= 完全無料 + オフライン)</h3>
+              <table class="ai-option-spec">
+                <tr><th>料金</th><td>完全無料</td></tr>
+                <tr><th>通信</th><td>外部送信なし (= local 完結)</td></tr>
+                <tr><th>速度</th><td>5-15 秒 / メモ (= 機種依存)</td></tr>
+                <tr><th>必要 spec</th><td>Apple Silicon + 16GB+ RAM 推奨</td></tr>
+                <tr><th>setup 時間</th><td>5 分</td></tr>
+              </table>
+              <ol class="ai-option-steps">
+                <li><a href="https://ollama.com/download/mac" target="_blank" rel="noopener">ollama.com</a> から Ollama を DL + 起動</li>
+                <li>ターミナルで <code>ollama pull gemma3:12b</code></li>
+                <li>Flote 起動 → メニューバー Flote → Settings → 「ローカル Ollama を使う」 が default で ON</li>
+              </ol>
+              <p class="ai-option-note">プライバシー重視 / 月額 0 円が良い / オフラインで使いたい人向け</p>
+            </div>
+
+            <!-- Option B: Anthropic Claude API -->
+            <div class="ai-option ai-option-b">
+              <div class="ai-option-tag">Option B</div>
+              <h3>Anthropic Claude API (= 高速 + 軽量)</h3>
+              <table class="ai-option-spec">
+                <tr><th>料金</th><td>Anthropic 従量課金 (= 1 メモ ~¥0.5-2 目安)</td></tr>
+                <tr><th>通信</th><td>Anthropic API 経由 (= cloud)</td></tr>
+                <tr><th>速度</th><td>2-5 秒 / メモ</td></tr>
+                <tr><th>必要 spec</th><td>制限なし (= 全 Mac OK)</td></tr>
+                <tr><th>setup 時間</th><td>1 分</td></tr>
+              </table>
+              <ol class="ai-option-steps">
+                <li><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> で account 作成 + API key 発行</li>
+                <li>支払い情報を登録 (= 初回 $5 credit ある時期も)</li>
+                <li>Flote 起動 → メニューバー Flote → Settings → 「Claude API key」 欄に貼り付け (= Keychain 暗号化保存)</li>
+              </ol>
+              <p class="ai-option-note">古い Mac / RAM 少ない / 速度優先 / 0 円より楽さ重視 人向け</p>
+            </div>
           </div>
+
+          <details class="ai-setup-faq">
+            <summary>結局どっちがいいの?</summary>
+            <div class="ai-setup-faq-body">
+              <p><strong>迷ったら Ollama (Option A)</strong>。 完全無料、 外部送信ゼロ、 一度 setup したら永続。 メモが大量だと月額が読めない時の保険にもなる。</p>
+              <p><strong>Mac が古い / RAM 少ない / 5 分の setup が面倒</strong> なら Claude API (Option B)。 1 日 10-30 メモなら月額 ¥150-900 程度の目安。 setup 1 分で動く。</p>
+              <p>両方設定した場合 = <strong>Claude API が優先</strong> (= 速いから)。 Ollama は API fail 時の fallback として残る。</p>
+              <p>どちらも設定しない場合 = AI Organize ボタンは表示されるが、 押すとエラーメッセージが出て 何も起きない (= 手書きメモ / グループ化 機能は問題なく動く)。</p>
+            </div>
+          </details>
+
+          <details class="ai-setup-faq">
+            <summary>後から切り替えできる?</summary>
+            <div class="ai-setup-faq-body">
+              <p>Flote 起動後 メニューバー Flote → Settings でいつでも切り替え可能。 設定変更後の再起動不要、 次の Organize ボタン押下から新 backend で動作。</p>
+            </div>
+          </details>
+
+          <details class="ai-setup-faq">
+            <summary>メモのデータはどこに送られる?</summary>
+            <div class="ai-setup-faq-body">
+              <p><strong>Ollama 使用時</strong>: メモは Mac 内 (= localhost) で処理。 外部送信ゼロ。</p>
+              <p><strong>Claude API 使用時</strong>: メモ 1 件分のテキストが Anthropic API に送信される。 Anthropic の <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener">プライバシーポリシー</a> per、 API 経由のデータは <strong>学習に使われません</strong>。 ただし「外部送信される」 事実は変わらないので、 機密情報を書く時は Ollama 推奨。</p>
+              <p>Flote 自体はメモを app 外に送信しません (= AI 整理 trigger 時のみ、 上記 backend に 1 件ずつ送る)。 ソース全公開なので <a href="https://github.com/tomarai85/flote/blob/main/apps/macos/Flote/OrganizeService.swift" target="_blank" rel="noopener">OrganizeService.swift</a> で実装確認可。</p>
+            </div>
+          </details>
         </div>
         </div><!-- /.os-section-mac -->
 

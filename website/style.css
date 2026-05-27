@@ -1728,3 +1728,156 @@ kbd {
   .nav-actions { gap: var(--sp-2); }
   .nav-github { font-size: 13px; padding: 6px 2px; }
 }
+
+/* ===== AI setup 2 option grid (= 2026-05-27 Tom directive で改修) ===== */
+.ai-setup {
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.ai-setup-header {
+  text-align: center;
+  margin-bottom: var(--sp-5);
+}
+.ai-setup-header strong {
+  font-size: 18px;
+  display: block;
+  margin-bottom: var(--sp-2);
+}
+.ai-setup-sub {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.ai-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+.ai-option {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.ai-option-a {
+  border-color: rgba(45, 212, 191, 0.4);
+}
+.ai-option-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(45, 212, 191, 0.12);
+  color: var(--accent);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  align-self: flex-start;
+}
+.ai-option-b .ai-option-tag {
+  background: rgba(160, 160, 168, 0.12);
+  color: var(--text-2);
+}
+.ai-option h3 {
+  font-size: 16px;
+  margin: 0;
+  line-height: 1.4;
+}
+.ai-option-spec {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ai-option-spec th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-3);
+  padding: 6px 8px 6px 0;
+  width: 80px;
+  vertical-align: top;
+}
+.ai-option-spec td {
+  padding: 6px 0;
+  color: var(--text-1);
+  line-height: 1.5;
+}
+.ai-option-spec tr + tr th,
+.ai-option-spec tr + tr td {
+  border-top: 1px solid var(--border);
+}
+.ai-option-steps {
+  padding-left: 22px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-1);
+  line-height: 1.7;
+}
+.ai-option-steps li { margin-bottom: 4px; }
+.ai-option-steps a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+.ai-option-steps code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.ai-option-note {
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--border);
+}
+.ai-setup-faq {
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.ai-setup-faq:first-of-type {
+  margin-top: var(--sp-2);
+}
+.ai-setup-faq summary {
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-1);
+  padding: 8px 0;
+  list-style: none;
+}
+.ai-setup-faq summary::before {
+  content: '▸ ';
+  color: var(--accent);
+  font-weight: 600;
+}
+.ai-setup-faq[open] summary::before { content: '▾ '; }
+.ai-setup-faq-body {
+  padding: var(--sp-2) 0 var(--sp-3) var(--sp-3);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.ai-setup-faq-body p { margin: 0 0 var(--sp-2); }
+.ai-setup-faq-body p:last-child { margin-bottom: 0; }
+.ai-setup-faq-body a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 720px) {
+  .ai-setup-grid { grid-template-columns: 1fr; }
+  .ai-option { padding: var(--sp-3); }
+}
