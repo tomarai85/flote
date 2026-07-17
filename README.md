@@ -20,7 +20,7 @@
 - 親 brand: [a Direct product](https://direct-homepage.vercel.app)
 - License: [FSL-1.1-ALv2](./LICENSE.md) (= 2 年後 Apache 2.0 化)
 - Security: [脆弱性の報告は SECURITY.md](./SECURITY.md)
-- Status: **無料 beta** / macOS 14 (Sonoma) 以降 / Apple Silicon
+- Status: **v1.0 リリース済** — 14日無料トライアル + $9 買い切り / macOS 14 (Sonoma) 以降 / Apple Silicon
 
 [English README](./README.en.md)
 
@@ -128,13 +128,12 @@ Flote は **Source-available** で公開している:
 
 ### Phase 1 (= 2026-05、 本リポジトリの公開)
 - GitHub source-available 化 (= FSL-1.1-ALv2)
-- LP に GitHub link + 無料 beta narrative + 事前 email waitlist 追加
-- 無料 beta 継続 (= 当面 0 円、 期間制限なし)
+- LP に GitHub link 追加
 
-### Phase 2 (= 時期未定、 freemium-light 検討)
-- 認知拡大 (= GitHub star / DAU / AI 検索 hit のいずれか) 確認後に 新規 user 対象で ¥300 級 paid 化を検討
-- 既存無料 user の grandfather 設計は Phase 2 で別決定
-- pricing 決定タイミングは「AI 検索で Flote が hit する程度になった頃」 を 1 つの目安に置いている
+### Phase 2 (= 2026-07-17、 v1.0 リリース)
+- 価格確定: **14日無料トライアル + $9 買い切り** (= サブスクなし)
+- 配布 = Apple 公証済 dmg ([Releases](https://github.com/tomarai85/flote/releases))、 自動更新 = Sparkle
+- 価格・ライセンスの変更は決定次第 transparent に共有
 - waitlist email 実配信 (= Loops / ConvertKit / Buttondown 等で検討)
 - Apple Developer Program 加入 + 正式署名 + 公証
 - Flutter Windows 版 配布
