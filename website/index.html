@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flote - 走り書きが、勝手に整理される</title>
-  <meta name="description" content="Option+Spaceで付箋が出る。思いついたことを書く。AIが構造化してくれる。macOS専用の無料メモアプリ。">
+  <meta name="description" content="Option+Spaceで付箋が出る。思いついたことを書く。AIが構造化してくれる。macOS専用メモアプリ。14日無料トライアル、$9 買い切り。">
 
   <!-- ===== OpenGraph + Twitter Card (= 2026-05-27 追加) ===== -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://flote-app.vercel.app/">
   <meta property="og:title" content="Flote — 走り書きが、勝手に整理される">
-  <meta property="og:description" content="Option+Space で付箋。 思いついたことを書く。 Organize ボタンで AI 整理。 macOS native ・ 完全無料 beta ・ source-available (FSL)。">
+  <meta property="og:description" content="Option+Space で付箋。 思いついたことを書く。 Organize ボタンで AI 整理。 macOS native ・ 14日無料トライアル ・ $9 買い切り ・ source-available (FSL)。">
   <meta property="og:image" content="https://flote-app.vercel.app/og-image.svg">
   <meta property="og:image:type" content="image/svg+xml">
   <meta property="og:image:width" content="1200">
@@ -18,7 +18,7 @@
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Flote — 走り書きが、勝手に整理される">
-  <meta name="twitter:description" content="Option+Space で付箋。 macOS native ・ 完全無料 beta ・ source-available。">
+  <meta name="twitter:description" content="Option+Space で付箋。 macOS native ・ 14日無料トライアル ・ $9 買い切り。">
   <meta name="twitter:image" content="https://flote-app.vercel.app/og-image.svg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,7 +53,7 @@
         <h1>走り書きが、<br><span class="accent-text">勝手に整理される。</span></h1>
         <p class="hero-sub">整理しなくていい。 Option+Space で付箋、 思いついたまま書く、 Organize ボタンで AI が後から整理する。 「書く」 と「実行する」 だけ残る。</p>
         <div class="hero-actions">
-          <a href="#download" class="btn-primary btn-large">無料でダウンロード</a>
+          <a href="#download" class="btn-primary btn-large">14日無料で試す</a>
           <a href="#how" class="btn-ghost">使い方を見る</a>
         </div>
         <div class="hero-stats">
@@ -61,7 +61,7 @@
           <div class="stat-divider"></div>
           <div class="stat"><strong>160px</strong><span>の付箋</span></div>
           <div class="stat-divider"></div>
-          <div class="stat"><strong>0円</strong><span>完全無料</span></div>
+          <div class="stat"><strong>$9</strong><span>買い切り・14日無料</span></div>
         </div>
       </div>
       <!-- Floating note mockup -->
@@ -345,7 +345,7 @@ SEO的にmetaもちゃんと書いて
             </tr>
             <tr>
               <td>価格</td>
-              <td class="compare-flote"><strong>無料</strong></td>
+              <td class="compare-flote"><strong>$9 買い切り (14日無料)</strong></td>
               <td>無料</td>
               <td>$8-10/月</td>
               <td>無料 (一部有料)</td>
@@ -410,52 +410,23 @@ SEO的にmetaもちゃんと書いて
 
         <!-- ===== macOS section ===== -->
         <div class="os-section os-section-mac is-active" id="os-section-mac" role="tabpanel">
-        <p class="dl-sub">macOS 14 (Sonoma) 以降 ・ Apple Silicon (M1/M2/M3/M4) ・ 完全無料</p>
+        <p class="dl-sub">macOS 14 (Sonoma) 以降 ・ Apple Silicon (M1/M2/M3/M4) ・ 14日無料トライアル</p>
 
-        <!-- ===== Primary install method: one curl command ===== -->
+        <!-- ===== Primary install method: notarized dmg (2026-07-17, v1.0) ===== -->
         <div class="install-hero">
           <div class="install-hero-meta">
             <span class="install-hero-step">STEP 1</span>
-            <span class="install-hero-time">所要 約2分</span>
+            <span class="install-hero-time">所要 約1分</span>
           </div>
-          <div class="install-hero-title">ターミナルに貼って Enter するだけ</div>
-          <div class="install-hero-cmd">
-<pre><code id="install-cmd-text">curl -fsSL -o /tmp/Flote.zip https://flote-app.vercel.app/Flote.zip && \
-  unzip -oq /tmp/Flote.zip -d /Applications/ && \
-  open /Applications/Flote.app</code></pre>
-            <button class="install-hero-copy" id="copy-curl" aria-live="polite" onclick="
-              if (this.dataset.busy === '1') return;
-              this.dataset.busy = '1';
-              const btn = this;
-              const node = document.getElementById('install-cmd-text');
-              const text = node.textContent;
-              const restore = () => { btn.dataset.busy = ''; btn.textContent = 'コマンドをコピー'; };
-              const flash = (msg, ms) => { btn.textContent = msg; setTimeout(restore, ms); };
-              const fallback = () => {
-                try {
-                  const range = document.createRange();
-                  range.selectNodeContents(node);
-                  const sel = window.getSelection();
-                  sel.removeAllRanges();
-                  sel.addRange(range);
-                  flash('上を選択しました。Cmd+C でコピー', 4000);
-                } catch (e) {
-                  flash('コピー失敗。手動で選択してください', 4000);
-                }
-              };
-              if (navigator.clipboard &amp;&amp; window.isSecureContext) {
-                navigator.clipboard.writeText(text)
-                  .then(() => flash('コピーしました', 2000))
-                  .catch(fallback);
-              } else {
-                fallback();
-              }
-            ">コマンドをコピー</button>
-          </div>
+          <div class="install-hero-title">ダウンロードして、ドラッグするだけ</div>
+          <p style="margin: 14px 0 18px;">
+            <a href="https://github.com/tomarai85/flote/releases/download/v1.0/Flote-1.0.dmg"
+               class="btn-primary btn-large" rel="noopener">Flote-1.0.dmg をダウンロード</a>
+          </p>
           <div class="install-hero-flow">
-            <span class="install-hero-flow-item">1. ダウンロード</span>
+            <span class="install-hero-flow-item">1. dmg を開く</span>
             <span class="install-hero-flow-arrow">-&gt;</span>
-            <span class="install-hero-flow-item">2. Applications に展開</span>
+            <span class="install-hero-flow-item">2. Flote を Applications へドラッグ</span>
             <span class="install-hero-flow-arrow">-&gt;</span>
             <span class="install-hero-flow-item">3. 起動</span>
           </div>
@@ -482,12 +453,9 @@ SEO的にmetaもちゃんと書いて
 
         <!-- FAQ: why not browser DL -->
         <details class="install-faq">
-          <summary>「開発元を確認できません」と警告が出るのはなぜ?</summary>
+          <summary>初回起動時に警告は出ますか?</summary>
           <div class="install-faq-body">
-            <p>このアプリは Apple Developer Program (年99ドル) への登録と Apple Notarization をテスター段階では未取得のため、初回起動時に macOS Gatekeeper が「開発元を確認できません」 と警告します。 これは macOS の通常の保護動作です。</p>
-            <p><strong>正規の手順で警告を抜けるには:</strong> Finder で <code>/Applications/Flote.app</code> を <kbd>Control</kbd> + クリック → 「開く」 を選択 → 「開く」 ボタンで確認。 これによりユーザーが明示的に許可した実行として記録され、 次回以降は警告なしで起動できます。</p>
-            <p>正式署名 + 公証版 (警告なしでダブルクリックで起動) は Apple Developer Program 加入後に切り替えます。 それまでは上記の Control+クリック 手順を推奨します。</p>
-            <p style="margin-top: 12px;">ブラウザで取りたい場合は <a href="./Flote.zip" download class="install-faq-direct">Flote.zip を直接ダウンロード</a> も用意しています (同じく Control+クリック → 開く で初回許可)。</p>
+            <p>出ません。v1.0 から Apple Developer ID で署名し、Apple の Notarization(公証)を取得済みです。ダブルクリックでそのまま起動できます。</p>
           </div>
         </details>
 
@@ -568,7 +536,7 @@ SEO的にmetaもちゃんと書いて
 
         <!-- ===== Windows section (Coming Soon placeholder) ===== -->
         <div class="os-section os-section-windows" id="os-section-windows" role="tabpanel" hidden>
-          <p class="dl-sub">Windows 10 / 11 ・ 完全無料 ・ 開発中</p>
+          <p class="dl-sub">Windows 10 / 11 ・ 開発中</p>
 
           <div class="install-hero install-hero-coming-soon">
             <div class="install-hero-meta">
@@ -634,9 +602,10 @@ Invoke-WebRequest -Uri "https://flote-app.vercel.app/Flote-windows.zip" -OutFile
       <div class="roadmap-grid">
         <div class="roadmap-card">
           <div class="roadmap-card-tag">現在 (2026-)</div>
-          <h3>完全無料 beta + ソースコード公開</h3>
+          <h3>14日無料トライアル + $9 買い切り + ソースコード公開</h3>
           <ul>
-            <li>ダウンロード無料、 機能制限なし</li>
+            <li>14日間、 機能制限なしで試せる</li>
+            <li>その後は $9 の一度きり買い切り (= サブスクではない)</li>
             <li>ソース公開 (Source-available, <a href="https://github.com/tomarai85/flote/blob/main/LICENSE.md" target="_blank" rel="noopener">FSL-1.1-ALv2</a>)</li>
             <li>個人 + 内部利用 OK、 商用配布 (= fork して同じものを売る) のみ制限</li>
             <li>2 年後 (2028-05-27) に自動的に Apache 2.0 ライセンスへ移行</li>
@@ -645,11 +614,10 @@ Invoke-WebRequest -Uri "https://flote-app.vercel.app/Flote-windows.zip" -OutFile
 
         <div class="roadmap-card">
           <div class="roadmap-card-tag">これから</div>
-          <h3>規模が出てきたら安価な paid 化を検討</h3>
+          <h3>価格・方針の変更は透明に</h3>
           <ul>
-            <li>口コミ / 検索 hit で広がってきたら、 持続のため ¥300 程度の paid 化を検討</li>
-            <li>既存ユーザーへの影響 / 移行は決定次第 transparent に共有</li>
-            <li>無理に paid 化はしない (= 少人数なら無料のまま続ける)</li>
+            <li>価格やライセンスに変更があれば、 決定次第 transparent に共有</li>
+            <li>既存ユーザーへの影響 / 移行も同じく事前に共有</li>
           </ul>
         </div>
 
