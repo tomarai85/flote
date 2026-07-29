@@ -38,6 +38,8 @@ dev_dependencies:
   json_serializable: ^6.8.0
   # アプリアイコン生成
   flutter_launcher_icons: ^0.14.1
+  # keychain_service_test が FlutterSecureStoragePlatform を継承して Fake を作るため
+  flutter_secure_storage_platform_interface: ^1.1.2
 
 flutter:
   uses-material-design: true
