@@ -4,6 +4,8 @@
   </a>
 </p>
 
+<p align="center"><strong>English</strong> &nbsp;|&nbsp; <a href="./README.ja.md">日本語</a></p>
+
 # Flote
 
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](./LICENSE.md)
@@ -22,7 +24,6 @@
 - Security: [report vulnerabilities via SECURITY.md](./SECURITY.md)
 - Status: **14-day free trial → $9 one-time purchase** (no subscription, no card up front) / macOS 14 (Sonoma) or later / Apple Silicon
 
-[日本語 README](./README.ja.md)
 
 ---
 
@@ -181,4 +182,4 @@ For urgent security reports, contact directly rather than filing an Issue.
 - Direct (= parent): https://direct-homepage.vercel.app
 - Author: Tomonori Arai (= 荒井 知憲) -- @TomArai85 on X (= personal brand)
 - License: [FSL-1.1-ALv2](./LICENSE.md)
-- Also available in Japanese: [日本語 README](./README.ja.md)
+- This README is maintained in both languages: [日本語](./README.ja.md)

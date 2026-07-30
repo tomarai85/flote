@@ -4,6 +4,8 @@
   </a>
 </p>
 
+<p align="center"><a href="./README.md">English</a> &nbsp;|&nbsp; <strong>日本語</strong></p>
+
 # Flote
 
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](./LICENSE.md)
@@ -22,7 +24,6 @@
 - Security: [脆弱性の報告は SECURITY.md](./SECURITY.md)
 - Status: **14日無料トライアル → $9 買い切り**(サブスクなし・カード登録不要)/ macOS 14 (Sonoma) 以降 / Apple Silicon
 
-[English README](./README.md)
 
 ---
 
@@ -181,4 +182,4 @@ Phase 1 期間中は **Issue 受付のみ**:
 - Direct (= parent): https://direct-homepage.vercel.app
 - Author: Tomonori Arai (= 荒井 知憲) -- @TomArai85 on X (= 個人 brand)
 - License: [FSL-1.1-ALv2](./LICENSE.md)
-- This README: 日本語 primary。 [English README](./README.md) は派生。
+- この README は英語版と対等に維持しています: [English](./README.md)
