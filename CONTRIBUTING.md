@@ -1,57 +1,67 @@
 # Contributing to Flote
 
-ありがとう、 関心を持ってくれて。 Flote は個人開発の source-available product です。 contribution policy はちょっと特殊なので最初に読んでください。
+Thanks for the interest. Flote is a solo-built, source-available product, and its
+contribution policy is unusual enough that it is worth reading first.
 
 ## TL;DR
 
-- **Issue OK** = bug report / feature request / 質問 全部歓迎
-- **PR は当面 close 運用** = License 戦略 (= 2 年後 OSS 化) の都合上、 外部 PR は accept しません
-- **2 年後 (2028-05-27) に PR open** = License が自動 Apache 2.0 化したタイミングで normal な OSS contribution workflow に切替
+- **Issues: yes.** Bug reports, feature requests and questions are all welcome.
+- **Pull requests: closed for now.** External PRs are not accepted while the
+  licence transition is pending.
+- **PRs open on 2028-05-27**, when the licence converts to Apache 2.0 and the
+  normal OSS contribution workflow starts.
 
-## Why PR closed for now?
+## Why are PRs closed?
 
-License = [FSL-1.1-ALv2](./LICENSE.md) (= Functional Source License) で運用しています:
+Flote ships under [FSL-1.1-ALv2](./LICENSE.md), the Functional Source License:
 
-- 商用 fork (= 「同 product を売る」) を 2 年間禁止
-- 2 年後 (= 2028-05-27) に自動 Apache 2.0 化 → 全 community contribution welcome
+- Commercial forks -- selling the same product -- are prohibited for two years.
+- On 2028-05-27 the licence converts to Apache 2.0 automatically, and community
+  contribution is welcome from that point on.
 
-この期間中に外部 PR を merge すると、 contributor の copyright が「2 年制約付き」 license に縛られてしまう問題が発生します (= 2 年後 Apache 化したいのに contribution 側 が同意してない、 等)。 これを避けるため、 PR は 2 年経過するまで close 運用にしています。
+Merging an external PR during that window would bind the contributor's copyright
+to a licence with a two-year restriction they never agreed to, and would make the
+Apache conversion messy. Closing PRs until the conversion avoids that.
 
-## What you CAN do (= 歓迎)
+## What you can do
 
-### 1. Issue を立てる
+### 1. Open an issue
 
-- **Bug report**: 再現手順 + 環境 + 期待動作 + 実動作 を書いて issue ください
-- **Feature request**: なぜ欲しいか、 代替手段を試したか、 を書いてください
-- **質問**: discussion 形式の質問 OK
+- **Bug report**: steps to reproduce, environment, expected behaviour, actual behaviour.
+- **Feature request**: why you want it, and what you tried instead.
+- **Questions**: fine as issues or discussions.
 
-template は `.github/ISSUE_TEMPLATE/` に用意してあります。
+Templates live in `.github/ISSUE_TEMPLATE/`.
 
-### 2. Fork して自分で fix を試す
+### 2. Fork it and fix it for yourself
 
-FSL は **個人 + 内部利用 OK** なので、 fork して自分用に patch を当てる行為は問題ありません。 結果を issue で共有してくれると、 maintainer が公式 patch に取り込みます (= attribution は issue thread で残す)。
+FSL permits personal and internal use, so forking and patching for your own use is
+fine. Share the result in an issue and the fix can be folded into an official
+patch, with attribution kept in the issue thread.
 
-### 3. Security 脆弱性報告
+### 3. Report a security vulnerability
 
-[SECURITY.md](./SECURITY.md) を参照してください。 Private Vulnerability Reporting flow が整備されています。
+See [SECURITY.md](./SECURITY.md). Private Vulnerability Reporting is enabled.
 
-## What you CANNOT do (= 制限)
+## What you cannot do
 
-- **商用配布** (= Flote を fork して有料で売る、 SaaS として hosting して課金 等) = 2 年間禁止
-- **PR を送る** = 受け付けません (= 上記 license 都合)
+- **Commercial redistribution** -- forking Flote and selling it, or hosting it as a
+  paid service -- is prohibited for two years.
+- **Sending pull requests**, for the licence reason above.
 
-## After 2028-05-27 (= 2 年後)
+## After 2028-05-27
 
-License が自動 Apache 2.0 化したら:
-- PR welcome
-- Commercial fork も OK
-- Contribution Workflow (= fork + PR + review) を standard OSS 形式で再開
+Once the licence converts to Apache 2.0:
 
-それまでは「issue 中心 + fork 自由」 で運営しています。
+- PRs are welcome.
+- Commercial forks are permitted.
+- The standard fork-PR-review workflow resumes.
+
+Until then it runs on issues plus free forking.
 
 ## Maintainer
 
-- [@tomarai85](https://github.com/tomarai85) = Tomonori Arai (= Tom)
+- [@tomarai85](https://github.com/tomarai85) -- Tomonori Arai (Tom)
 - a [Direct](https://direct-homepage.vercel.app) product
 
-質問あれば issue で気軽に聞いてください。
+Questions are welcome as issues.

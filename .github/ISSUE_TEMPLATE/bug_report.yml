@@ -1,18 +1,18 @@
 name: Bug Report
-description: Flote が期待通り動かない / 警告 / クラッシュ等の報告
+description: Flote does not behave as expected -- a warning, a crash, anything wrong
 title: "[Bug] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        ご報告ありがとうございます。 再現手順を書いてもらえると助かります。
+        Thanks for reporting. Steps to reproduce help more than anything else.
 
   - type: input
     id: macos_version
     attributes:
-      label: macOS バージョン
-      description: メニュー > このMacについて で確認
+      label: macOS version
+      description: Apple menu > About This Mac
       placeholder: "14.5 (Sonoma) / 15.1 (Sequoia) etc"
     validations:
       required: true
@@ -20,7 +20,7 @@ body:
   - type: input
     id: hardware
     attributes:
-      label: ハードウェア
+      label: Hardware
       description: Apple Silicon (M1/M2/M3/M4) or Intel
       placeholder: "M2 MacBook Air"
     validations:
@@ -29,19 +29,19 @@ body:
   - type: input
     id: flote_version
     attributes:
-      label: Flote バージョン
-      description: メニューバーアイコン > About か、 zip ダウンロード日
-      placeholder: "v0.1.0 / 2026-05-27 ダウンロード"
+      label: Flote version
+      description: Menu bar icon > About, or the date you downloaded the zip
+      placeholder: "v0.1.0 / downloaded 2026-05-27"
 
   - type: textarea
     id: repro
     attributes:
-      label: 再現手順
-      description: 何をしたら起きるか
+      label: Steps to reproduce
+      description: What did you do to trigger it
       placeholder: |
-        1. Option+Space で付箋を出す
-        2. 「テスト」 と入力
-        3. Organize ボタンを押す
+        1. Press Option+Space to summon a note
+        2. Type "test"
+        3. Press Organize
         4. ...
     validations:
       required: true
@@ -49,22 +49,22 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: 期待した動作
-      placeholder: AI が整理してくれる
+      label: What you expected
+      placeholder: The AI organizes the note
     validations:
       required: true
 
   - type: textarea
     id: actual
     attributes:
-      label: 実際の動作
-      placeholder: クラッシュした / 何も起きない / エラー が出た
+      label: What actually happened
+      placeholder: It crashed / nothing happened / an error appeared
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: ログ / スクリーンショット (任意)
-      description: Console.app の Flote ログや スクショ あれば貼ってください
+      label: Logs or screenshots (optional)
+      description: Flote lines from Console.app, or a screenshot, if you have them
       render: text

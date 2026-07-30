@@ -2,58 +2,59 @@
 
 ## Supported Versions
 
-Flote は beta 版です。 現時点では `main` branch のみがサポート対象です。 安定版 release 後、 別途 LTS 方針を定めます。
+Flote is in beta. Only the `main` branch is supported today; an LTS policy will be
+defined after the first stable release.
 
 | Version | Supported |
 |---------|-----------|
 | main    | ✅        |
-| < 1.0   | ⚠️ best-effort のみ |
+| < 1.0   | ⚠️ best-effort only |
 
 ## Reporting a Vulnerability
 
-セキュリティ脆弱性を発見した場合、 **公開 issue では報告しないでください**。 以下の private channel を使用してください:
+If you find a security vulnerability, **do not report it in a public issue**. Use
+one of the private channels below.
 
-### Option 1: GitHub Private Vulnerability Reporting (推奨)
+### Option 1: GitHub Private Vulnerability Reporting (preferred)
 
-1. 本リポジトリの [Security tab](https://github.com/tomarai85/flote/security) を開く
-2. 「Report a vulnerability」 をクリック
-3. 詳細 (再現手順 / 影響範囲 / 推奨修正案) を記入
+1. Open this repository's [Security tab](https://github.com/tomarai85/flote/security)
+2. Click "Report a vulnerability"
+3. Include steps to reproduce, the blast radius, and a suggested fix if you have one
 
-GitHub の private channel 経由なので、 fix がライブまで非公開で進行します。
+This keeps everything private until a fix is live.
 
-### Option 2: Email
+### Option 2: Without a GitHub account
 
-GitHub アカウント不要の場合は、 メーカー maintainer に直接連絡:
-
-- 連絡先 (= LP 経由): https://flote-app.vercel.app の Roadmap section から GitHub Watch 経由で contact
+Reach the maintainer through the website: https://flote-app.vercel.app
 
 ### What to expect
 
-- **初回 acknowledge**: 5 営業日以内
-- **初期評価**: 14 日以内 (= severity 判定 + 修正方針)
-- **修正 + advisory 公開**: 高 severity は 90 日以内 (= responsible disclosure 標準)
-- **謝辞**: 修正完了時、 advisory + release notes で 報告者を honor (= 希望する場合のみ)
+- **First acknowledgement**: within 5 business days
+- **Initial assessment**: within 14 days (severity plus a fix plan)
+- **Fix and advisory**: within 90 days for high severity, per responsible disclosure
+- **Credit**: named in the advisory and release notes, if you want to be
 
 ## Out of scope
 
-以下は本 policy の対象外です:
-
-- macOS の Gatekeeper / Notarization 警告 (= 既知、 [LP の FAQ](https://flote-app.vercel.app#download) に記載済)
-- AI Organize 機能で Ollama を使う際の Ollama 自体の脆弱性 (= 別途 Ollama project に報告)
-- LP (= Vercel 配信) 側の脆弱性 (= 主要 source ではないが、 重大なら報告歓迎)
+- macOS Gatekeeper and notarization warnings -- known, and documented in the
+  [website FAQ](https://flote-app.vercel.app#download)
+- Vulnerabilities in Ollama itself when used for AI Organize -- report those to the
+  Ollama project
+- The website (served by Vercel) is not the primary source, but serious reports are
+  still welcome
 
 ## Security features in place
 
-- **GitHub secret scanning**: ENABLED (= push 時 + history 全 scan)
-- **GitHub Push Protection**: ENABLED (= secret を含む push を block)
-- **Dependabot security updates**: ENABLED (= 自動 dependency 更新)
-- **`.env*` / `*.key` / `*.pem` / `DevSecrets.swift`**: `.gitignore` で構造的 exclude
-- **License (FSL)**: 「中身を読み取っていないか」 を source 監査で確認可能 = 透明性 moat
+- **GitHub secret scanning**: enabled, on push and across history
+- **GitHub Push Protection**: enabled, blocks pushes containing secrets
+- **Dependabot security updates**: enabled
+- **`.env*`, `*.key`, `*.pem`, `DevSecrets.swift`**: structurally excluded via `.gitignore`
+- **Source-available licence**: you can audit what the app does with your notes
 
 ## Why source-available?
 
-- 個人開発者が「ある日消える」 risk への保証 (= fork で継続可能)
-- AI に書いた内容を「中身読み取ってない」 を code で確認可能
-- 自分で patch / fix できる権利を user に残す
+- Insurance against a solo developer disappearing: the fork keeps working
+- You can verify in code that your notes are not being read or shipped anywhere
+- You keep the right to patch and fix it yourself
 
-詳細は [README.md](./README.md) の Why Open section 参照。
+See the Why Open section of [README.md](./README.md) for the longer version.
