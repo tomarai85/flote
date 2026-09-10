@@ -33,6 +33,57 @@ struct StickyNote: Identifiable, Codable {
     /// Groupに最後に入った/移動した日時。Groupsタブでの並び順に使う。
     var sortedAt: Date?
 
+    // MARK: Organize↔戻す snapshot (S1 — content-protection toggle)
+    //
+    // A successful Organize stores the pre-organize state HERE (persisted,
+    // not view-local) so "戻す" survives panel close / app restart. While
+    // these are non-nil the Organize button shows 戻す — re-organizing an
+    // already-organized note (the "summary shrinks forever" accident Tom
+    // hit while dogfooding) is structurally impossible.
+    /// Rich text as it was just before the last Organize.
+    var organizeOriginalRichData: Data?
+    /// Plain text as it was just before the last Organize.
+    var organizeOriginalPlain: String?
+    /// rolledTitle as it was just before the last Organize.
+    var organizeOriginalTitle: String?
+    /// The plain text Organize produced — compared against `text` on 戻す
+    /// to detect user edits made after organizing (confirm before discard).
+    var organizedResultPlain: String?
+
+    // MARK: Recently Deleted (S2 — persistence v2)
+    //
+    /// When the note was soft-deleted (moved to the recently-deleted store).
+    /// nil for active notes. Notes older than 30 days in the recently-deleted
+    /// store are purged on launch. Legacy-tolerant optional: absent in every
+    /// pre-S2 payload, decoded with `try?`, encoded only when present.
+    var deletedAt: Date?
+
+    /// S6 Touch ID lock: content hidden behind device-owner authentication.
+    /// Persisted opt-in; the UNLOCKED state is session-only (never stored).
+    /// Legacy-tolerant: absent in every pre-S6 payload, defaults to false.
+    var isLocked: Bool = false
+
+    /// Free-resize (Tom 2026-07-11): true once the user drags this panel's
+    /// edges — the note owns its geometry from then on; size presets and
+    /// content-height auto-fit stop touching it. Legacy-tolerant, false
+    /// when absent.
+    var userResized: Bool = false
+
+    // MARK: Deck (S16 — one window, many notes)
+    //
+    // Notes sharing a deckID ride ONE floating panel as a tab-like deck
+    // (Antinote's swipe-to-navigate). Exactly one member of an open deck
+    // has isPanelOpen == true (the shown note — launch restore re-creates
+    // just that panel); hidden members keep deckID with isPanelOpen false.
+    // Archiving / sorting-away a member clears both fields (it leaves the
+    // deck). Legacy-tolerant: absent in every pre-S16 payload, nil = the
+    // note is its own solo panel — zero behavior change.
+    /// Identity of the deck this note belongs to. nil = not in a deck.
+    var deckID: UUID?
+    /// Stable position inside the deck (append = max+1). nil sorts first
+    /// by createdAt (defensive: should always be set alongside deckID).
+    var deckOrder: Int?
+
     init(
         id: UUID = UUID(),
         text: String = "",
@@ -83,6 +134,17 @@ struct StickyNote: Identifiable, Codable {
         case groupID
         // New unified-model keys
         case isPanelOpen, sortedAt
+        // Organize↔戻す snapshot (S1)
+        case organizeOriginalRichData, organizeOriginalPlain
+        case organizeOriginalTitle, organizedResultPlain
+        // Recently Deleted (S2)
+        case deletedAt
+        // Touch ID lock (S6)
+        case isLocked
+        // Free resize (2026-07-11)
+        case userResized
+        // Deck (S16)
+        case deckID, deckOrder
         // Legacy keys — decoded for backward compatibility, not encoded
         case isArchived, archivedAt
     }
@@ -132,6 +194,22 @@ struct StickyNote: Identifiable, Codable {
         let newSorted = try? c.decodeIfPresent(Date.self, forKey: .sortedAt)
         let legacySorted = try? c.decodeIfPresent(Date.self, forKey: .archivedAt)
         sortedAt = newSorted ?? legacySorted
+
+        // Organize snapshot: absent in every pre-S1 payload — nil is "no
+        // pending revert", the Organize button stays in organize mode.
+        organizeOriginalRichData = try? c.decodeIfPresent(Data.self, forKey: .organizeOriginalRichData)
+        organizeOriginalPlain = try? c.decodeIfPresent(String.self, forKey: .organizeOriginalPlain)
+        organizeOriginalTitle = try? c.decodeIfPresent(String.self, forKey: .organizeOriginalTitle)
+        organizedResultPlain = try? c.decodeIfPresent(String.self, forKey: .organizedResultPlain)
+
+        // Recently Deleted (S2): absent in every pre-S2 payload — nil means
+        // the note is active (not sitting in the recently-deleted store).
+        deletedAt = try? c.decodeIfPresent(Date.self, forKey: .deletedAt)
+        isLocked = (try? c.decodeIfPresent(Bool.self, forKey: .isLocked)) ?? false
+        userResized = (try? c.decodeIfPresent(Bool.self, forKey: .userResized)) ?? false
+        // Deck (S16): absent in every pre-S16 payload — nil = solo panel.
+        deckID = try? c.decodeIfPresent(UUID.self, forKey: .deckID)
+        deckOrder = try? c.decodeIfPresent(Int.self, forKey: .deckOrder)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -157,6 +235,15 @@ struct StickyNote: Identifiable, Codable {
         try c.encodeIfPresent(groupID, forKey: .groupID)
         try c.encode(isPanelOpen, forKey: .isPanelOpen)
         try c.encodeIfPresent(sortedAt, forKey: .sortedAt)
+        try c.encodeIfPresent(organizeOriginalRichData, forKey: .organizeOriginalRichData)
+        try c.encodeIfPresent(organizeOriginalPlain, forKey: .organizeOriginalPlain)
+        try c.encodeIfPresent(organizeOriginalTitle, forKey: .organizeOriginalTitle)
+        try c.encodeIfPresent(organizedResultPlain, forKey: .organizedResultPlain)
+        try c.encodeIfPresent(deletedAt, forKey: .deletedAt)
+        if isLocked { try c.encode(isLocked, forKey: .isLocked) }
+        if userResized { try c.encode(userResized, forKey: .userResized) }
+        try c.encodeIfPresent(deckID, forKey: .deckID)
+        try c.encodeIfPresent(deckOrder, forKey: .deckOrder)
         // Legacy keys (isArchived, archivedAt) are intentionally NOT encoded.
         // They survive only via the backward-compat decode path.
     }
@@ -168,6 +255,20 @@ extension StickyNote {
     /// title got wiped by an older bug), fall back to the first non-blank
     /// line of the body clipped to 12 glyphs so the scroll never looks blank.
     /// Returns nil only when the note is completely empty.
+    /// The ONLY title accessor UI may use (Evaluator r3b NEW-1): a locked
+    /// note shows its EXPLICIT rolledTitle or nothing — the body-derived
+    /// fallback (displayTitle) must never render for a locked note, because
+    /// the first line IS content. nil = caller shows a localized
+    /// "locked note" placeholder. Whitespace-only rolledTitle counts as
+    /// absent (NEW-2: legacy-decode data can carry it un-sanitized).
+    var lockedSafeTitle: String? {
+        let explicit = rolledTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if isLocked {
+            return (explicit?.isEmpty == false) ? explicit : nil
+        }
+        return displayTitle
+    }
+
     var displayTitle: String? {
         if let t = rolledTitle?.trimmingCharacters(in: .whitespacesAndNewlines),
            !t.isEmpty {
@@ -303,3 +404,4 @@ enum NoteColorTheme: String, Codable, CaseIterable {
         }
     }
 }
+

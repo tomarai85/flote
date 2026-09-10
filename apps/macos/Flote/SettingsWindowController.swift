@@ -68,12 +68,17 @@ final class SettingsWindowController {
             object: win,
             queue: .main
         ) { [weak self] _ in
-            guard let self else { return }
-            self.window?.contentViewController = nil
-            self.window = nil
-            if let obs = self.closeObserver {
-                NotificationCenter.default.removeObserver(obs)
-                self.closeObserver = nil
+            // queue: .main guarantees main-thread delivery; assumeIsolated
+            // bridges to the @MainActor state (same idiom as NoteManager's
+            // sleep observer).
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.window?.contentViewController = nil
+                self.window = nil
+                if let obs = self.closeObserver {
+                    NotificationCenter.default.removeObserver(obs)
+                    self.closeObserver = nil
+                }
             }
         }
 

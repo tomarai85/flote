@@ -34,15 +34,15 @@ enum NoteEncryption {
         var errorDescription: String? {
             switch self {
             case .keychainSaveFailed(let s):
-                return "ノート暗号化キーの Keychain 保存に失敗しました (OSStatus=\(s))。"
+                return LN("ノート暗号化キーの Keychain 保存に失敗しました", "Could not save the note encryption key to the Keychain") + " (OSStatus=\(s))"
             case .keychainReadFailed(let s):
-                return "ノート暗号化キーの Keychain 読み出しに失敗しました (OSStatus=\(s))。"
+                return LN("ノート暗号化キーの Keychain 読み出しに失敗しました", "Could not read the note encryption key from the Keychain") + " (OSStatus=\(s))"
             case .keyDataInvalid:
-                return "ノート暗号化キーのデータ形式が壊れています。"
+                return LN("ノート暗号化キーのデータ形式が壊れています。", "The note encryption key data is malformed.")
             case .sealFailed(let e):
-                return "ノートの暗号化に失敗しました: \(e.localizedDescription)"
+                return LN("ノートの暗号化に失敗しました: ", "Could not encrypt the note: ") + e.localizedDescription
             case .openFailed(let e):
-                return "ノートの復号に失敗しました: \(e.localizedDescription)"
+                return LN("ノートの復号に失敗しました: ", "Could not decrypt the note: ") + e.localizedDescription
             }
         }
     }
@@ -52,15 +52,38 @@ enum NoteEncryption {
 
     // MARK: - Key lifecycle
 
+    #if DEBUG
+    /// Test-only hook: when set, seal/open use this key and never touch the
+    /// Keychain. The standalone persistence harness (.harness/tests/) runs as
+    /// an unsigned CLI binary — reading the app's Keychain item from there
+    /// would trigger a consent prompt or a denial, so tests inject a fixed
+    /// key instead. Compiled out of Release builds.
+    nonisolated(unsafe) static var overrideKeyForTesting: SymmetricKey?
+    #endif
+
     /// Returns the symmetric key from Keychain. If none exists, generates
     /// a fresh 256-bit key, stores it in Keychain, and returns it.
     static func loadOrCreateKey() throws -> SymmetricKey {
-        if let existing = try? readKey() {
-            return existing
+        #if DEBUG
+        if let testKey = overrideKeyForTesting {
+            return testKey
         }
-        let fresh = SymmetricKey(size: .bits256)
-        try saveKey(fresh)
-        return fresh
+        #endif
+        do {
+            return try readKey()
+        } catch NoteEncryptionError.keychainReadFailed(let status)
+            where status == errSecItemNotFound {
+            // Genuinely no key yet (true first run) — safe to mint one.
+            let fresh = SymmetricKey(size: .bits256)
+            try saveKey(fresh)
+            return fresh
+        }
+        // Any OTHER failure (access denied, interaction not allowed,
+        // keychain locked…) means a key EXISTS but we cannot read it.
+        // Fail CLOSED: minting a replacement here silently orphans every
+        // existing ciphertext — it fired once (2026-07-10 12:56 JST, the
+        // flote_groups .corrupt quarantine) when a re-signed build was
+        // denied access. Data loss, never again.
     }
 
     private static func readKey() throws -> SymmetricKey {

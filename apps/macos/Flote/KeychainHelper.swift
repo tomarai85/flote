@@ -40,39 +40,46 @@ enum KeychainHelper {
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess
 #else
-        // Release builds use a stable commercial code signature.
-        // SecAccessControl with kSecAccessControlUserPresence requires the
-        // user to authenticate (Touch ID / password) before this app can
-        // read the item, even if the keychain is already unlocked.
-        // kSecAttrAccessibleWhenUnlockedThisDeviceOnly prevents the item from
-        // migrating to other devices via iCloud Keychain backup.
-        var error: Unmanaged<CFError>?
-        guard let access = SecAccessControlCreateWithFlags(
-            kCFAllocatorDefault,
-            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-            .userPresence,
-            &error
-        ) else {
-            // Fail closed: no weak fallback. The original 2026-05 implementation
-            // silently fell back to `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
-            // WITHOUT the user-presence ACL — which means any process running as
-            // the user (after login) could read the API key with no Touch ID
-            // prompt. That defeated the entire purpose of the ACL. We now refuse
-            // to store the key at all rather than store it under weaker terms
-            // than the user expects.
-            print("[Flote] SecAccessControlCreateWithFlags failed (fail-closed): \(String(describing: error))")
-            return false
-        }
+        // Release builds: kSecAttrAccessibleWhenUnlockedThisDeviceOnly —
+        // login-keychain unlock gates access, no iCloud migration.
+        //
+        // S1 (2026-07-10, zero-interruption): the former `.userPresence`
+        // SecAccessControl is deliberately REMOVED. It made every legacy
+        // Organize fire a Touch ID prompt (the app's #1 interruption
+        // complaint). Now that Organize is served on-device by default,
+        // the Claude key is an optional power-user tier, and prompting for
+        // biometrics on a background text call is the wrong trade: the item
+        // is sandbox-scoped to this app's signature and this device. Note
+        // encryption keys (NoteEncryption.swift) are unaffected.
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
             kSecValueData as String: data,
-            kSecAttrAccessControl as String: access
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess
 #endif
+    }
+
+    /// Existence check WITHOUT touching the secret. Metadata-only queries
+    /// (no kSecReturnData) never hit the item's ACL/partition gate, so this
+    /// can never raise a SecurityAgent password dialog. Callers that only
+    /// need "is a key saved?" (Settings badge, provider routing) MUST use
+    /// this — readAPIKey() on a foreign-signed item freezes the app behind
+    /// a modal keychain prompt (live-fired 2026-07-11: opening the AI tab
+    /// blocked the whole Settings window).
+    static func hasAPIKey() -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnAttributes as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var item: CFTypeRef?
+        return SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess
     }
 
     static func readAPIKey() -> String? {
@@ -90,7 +97,27 @@ enum KeychainHelper {
               let key = String(data: data, encoding: .utf8) else {
             return nil
         }
-        return key.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        migrateLegacyACLItemIfNeeded(key: trimmed)
+        return trimmed
+    }
+
+    /// One-time migration (Evaluator #3): keys saved by pre-S1 Release
+    /// builds carry a `.userPresence` SecAccessControl ON THE ITEM — the new
+    /// ACL-free save code doesn't touch existing items, so upgraders keep
+    /// getting Touch ID prompts. On the first successful read (the user just
+    /// authenticated, so we hold the plaintext), re-save the same key
+    /// without the ACL. Flagged in UserDefaults so this runs exactly once.
+    private static let aclMigrationDoneKey = "floteAPIKeyACLMigrated"
+
+    private static func migrateLegacyACLItemIfNeeded(key: String) {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: aclMigrationDoneKey), !key.isEmpty else { return }
+        // delete + ACL-free re-save; saveAPIKey deletes first by design.
+        if saveAPIKey(key) {
+            defaults.set(true, forKey: aclMigrationDoneKey)
+            print("[Flote] API key migrated off the user-presence ACL")
+        }
     }
 
     @discardableResult

@@ -1,43 +1,78 @@
 import AppKit
 
-// StowAnimator handles roll-up and mini animations for FloatingPanel instances.
-// All methods run on the main actor since they manipulate NSWindow frames directly.
+// StowAnimator handles stow (balloon handle) and mini transitions for
+// FloatingPanel instances. All methods run on the main actor since they
+// manipulate NSWindow frames directly.
 //
 // Architecture note (2026-04-17): After four SIGABRT crashes in
 // NSHostingView.updateAnimatedWindowSize → _postWindowNeedsLayout recursion
-// (ips: 132651, 155547, 181410, 181956), we abandoned panel.animator().setFrame
-// for shrinking transitions. The new approach:
+// (ips: 132651, 155547, 181410, 181956), we NEVER animate the real panel's
+// FRAME. Two safe tools remain:
 //
-//   1. Snapshot the NSPanel's SwiftUI-backed contentView into an NSImage.
-//   2. Spin up a transient, snapshot-only NSPanel (pure AppKit, no
-//      NSHostingView) and animate its frame.
-//   3. Instantly resize the real panel (animate: false) and swap it back on.
+//   1. alphaValue animation on the real panel (window opacity — no layout
+//      pass, proven safe; frame changes happen instantly while invisible).
+//   2. For the mini shrink only: a transient, snapshot-only NSPanel (pure
+//      AppKit, no NSHostingView) whose frame IS animated, then the real
+//      panel snaps in at the end (animateShrinkWithSnapshot).
 //
-// This completely side-steps the AppKit/SwiftUI bridge feedback loop that
-// caused the crashes, because the animated window has no NSHostingView to
-// fire windowDidLayout → updateAnimatedWindowSize from.
-//
-// Growing transitions (expand / expandFromMini / miniToRolledUp) don't take
-// a snapshot because the target size's SwiftUI content has never rendered
-// yet — any snapshot would misrepresent the result. They snap instantly.
+// Stow redesign (2026-07-12, owner verdict): the balloon FLIGHT is gone —
+// 「巻き取るというより、シンプルに消えるイメージ」. Stow = the note fades
+// out IN PLACE and a small balloon handle appears at its former top edge;
+// restore = the note fades in just below the handle. No transient panels,
+// no snapshot cache, no cross-screen travel on this path anymore.
 @MainActor
 final class StowAnimator {
 
     static let shared = StowAnimator()
     private init() {}
 
-    // Height of the rolled-up state: matches PaperCurlView max (18+8=26).
-    private let rolledUpHeight: CGFloat = 26
+    // Handle window size while stowed. The persisted state stays
+    // `.rolledUp` (same raw value — zero migration); only geometry and
+    // rendering changed across the redesigns.
+    static let stringSize = CGSize(width: 44, height: 76)
     // Size of the panel in mini mode.
     private let miniSize: CGFloat = 48
-    // Animation duration in seconds.
+    // Mini shrink animation duration in seconds.
     private let duration: TimeInterval = 0.3
+    // Stow fades (2026-07-12): note out / handle+note in. Short — the
+    // owner wants "simply disappears", not choreography.
+    private let fadeOutDuration: TimeInterval = 0.15
+    private let fadeInDuration: TimeInterval = 0.15
+    private let handleFadeInDuration: TimeInterval = 0.12
 
-    // MARK: - Roll-up (in place, upward)
+    /// Handle frame LOCAL to the note (2026-07-12 redesign): same
+    /// x-center, the balloon (bottom ~24pt of the window) hovering at the
+    /// note's former TOP edge — never at the screen top. Clamped onto the
+    /// visible area, nudged sideways while it overlaps another handle.
+    private func handleFrame(for noteFrame: NSRect, on screen: NSScreen?, noteID: UUID) -> NSRect {
+        let vf = (screen ?? NSScreen.main)?.visibleFrame
+            ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let size = Self.stringSize
+        var x = min(max(noteFrame.midX - size.width / 2, vf.minX + 8),
+                    vf.maxX - size.width - 8)
+        let y = min(max(noteFrame.maxY - 24, vf.minY + 8),
+                    vf.maxY - size.height)
+        var frame = NSRect(x: x, y: y, width: size.width, height: size.height)
+        // Collision nudge at LOCAL positions (notes are spread out, so a
+        // rect-overlap check replaces the old shared-top-edge row logic).
+        let others = PanelManager.shared.stringPanelFrames(excluding: noteID)
+        var attempts = 0
+        while attempts < 40,
+              others.contains(where: { $0.insetBy(dx: -8, dy: -8).intersects(frame) }) {
+            x += size.width + 12
+            if x + size.width > vf.maxX - 8 { x = vf.minX + 8 + CGFloat(attempts) * 6 }
+            frame.origin.x = x
+            attempts += 1
+        }
+        return frame
+    }
 
-    /// Roll up the note in place. The top-left corner stays fixed,
-    /// the width is preserved, and the height shrinks to `rolledUpHeight`.
-    /// The visual effect is a scroll rolling upward from the bottom.
+    // MARK: - Stow (fade out in place → balloon handle)
+
+    /// Stow: the note fades out IN PLACE (alpha only — the real panel's
+    /// frame is NEVER animated), then the panel re-dresses as the balloon
+    /// handle at the note's former top edge and quickly fades back in.
+    /// Reduce Motion = instant state change, no fades.
     func rollUp(panel: FloatingPanel, noteID: UUID) {
         let currentFrame = panel.frame
         NoteManager.shared.saveExpandedGeometry(
@@ -45,34 +80,108 @@ final class StowAnimator {
             size: currentFrame.size,
             position: currentFrame.origin
         )
+        let target = handleFrame(
+            for: currentFrame, on: panel.screen, noteID: noteID)
 
-        let topY = currentFrame.maxY
-        let targetFrame = NSRect(
-            x: currentFrame.minX,
-            y: topY - rolledUpHeight,
-            width: currentFrame.width,
-            height: rolledUpHeight
-        )
-
-        animateShrinkWithSnapshot(panel: panel, to: targetFrame, noteID: noteID) {
-            NoteManager.shared.updateStowState(id: noteID, state: .rolledUp)
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            snapTo(panel: panel, targetFrame: target, noteID: noteID, finalState: .rolledUp)
+            return
         }
+
+        PanelManager.shared.beginAnimating(noteID: noteID)
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = fadeOutDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().alphaValue = 0
+        }, completionHandler: {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    // Removed mid-fade (a background classify closed it)?
+                    // Leave it removed — just release the animation guard.
+                    guard PanelManager.shared.hasPanel(noteID: noteID) else {
+                        PanelManager.shared.endAnimating(noteID: noteID)
+                        return
+                    }
+                    // Re-dress invisible: state swap + INSTANT frame change
+                    // while alpha 0 (the proven crash-safe pattern), then a
+                    // quick fade-in of the handle.
+                    NoteManager.shared.updateStowState(id: noteID, state: .rolledUp)
+                    panel.applyChrome(for: .rolledUp)
+                    panel.setFrame(target, display: true, animate: false)
+                    panel.alphaValue = 0
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = self.handleFadeInDuration
+                        context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                        panel.animator().alphaValue = 1.0
+                    }, completionHandler: {
+                        DispatchQueue.main.async {
+                            MainActor.assumeIsolated {
+                                if PanelManager.shared.hasPanel(noteID: noteID) {
+                                    panel.alphaValue = 1.0
+                                }
+                                PanelManager.shared.endAnimating(noteID: noteID)
+                            }
+                        }
+                    })
+                }
+            }
+        })
     }
 
-    // Animate the panel back to its original size from rolled-up state.
+    // MARK: - Restore (fade in just below the handle)
+
+    /// Tap the balloon: the note fades in JUST BELOW the handle — top
+    /// edge ≈ handle bottom − 8pt, same x-center, clamped on-screen — NOT
+    /// at its historical frame (owner 2026-07-12: flying back to the old
+    /// position was wrong). The new spot is persisted explicitly because
+    /// the didMove observer is suppressed while the animation guard is up.
     func expand(panel: FloatingPanel, noteID: UUID) {
         guard let note = NoteManager.shared.note(byID: noteID) else { return }
 
+        let handleF = panel.frame
         let targetSize = note.expandedSize ?? GoldenRatio.medium
-        let topY = panel.frame.maxY
-        let targetFrame = NSRect(
-            x: panel.frame.minX,
-            y: topY - targetSize.height,
-            width: targetSize.width,
-            height: targetSize.height
+        let vf = (panel.screen ?? NSScreen.main)?.visibleFrame
+            ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        var origin = CGPoint(
+            x: handleF.midX - targetSize.width / 2,
+            y: handleF.minY - 8 - targetSize.height
         )
+        origin.x = min(max(origin.x, vf.minX), max(vf.minX, vf.maxX - targetSize.width))
+        origin.y = min(max(origin.y, vf.minY), max(vf.minY, vf.maxY - targetSize.height))
+        let targetFrame = NSRect(origin: origin, size: targetSize)
 
-        snapTo(panel: panel, targetFrame: targetFrame, noteID: noteID, finalState: .expanded)
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            snapTo(panel: panel, targetFrame: targetFrame, noteID: noteID, finalState: .expanded)
+            NoteManager.shared.updatePosition(id: noteID, position: origin)
+            NoteManager.shared.updateSize(id: noteID, size: targetSize)
+            return
+        }
+
+        PanelManager.shared.beginAnimating(noteID: noteID)
+        // Re-dress invisible, place instantly, fade in. applyChrome
+        // restores the user's opacity-slider alpha — capture it as the
+        // fade target, then start from 0.
+        NoteManager.shared.updateStowState(id: noteID, state: .expanded)
+        panel.applyChrome(for: .expanded)
+        let targetAlpha = panel.alphaValue
+        panel.alphaValue = 0
+        panel.setFrame(targetFrame, display: true, animate: false)
+        NoteManager.shared.updatePosition(id: noteID, position: origin)
+        NoteManager.shared.updateSize(id: noteID, size: targetSize)
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = fadeInDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = targetAlpha
+        }, completionHandler: {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    if PanelManager.shared.hasPanel(noteID: noteID) {
+                        panel.alphaValue = targetAlpha
+                    }
+                    PanelManager.shared.endAnimating(noteID: noteID)
+                }
+            }
+        })
     }
 
     // MARK: - Mini mode
@@ -116,31 +225,24 @@ final class StowAnimator {
 
     // MARK: - Direct rolledUp ↔ mini transitions (M4)
 
-    /// Transition directly from rolledUp to mini without an intermediate expand.
+    /// Transition directly from the string to mini without an intermediate
+    /// expand. The string is tiny — instant snap reads cleaner than a shrink.
     func rollUpToMini(panel: FloatingPanel, noteID: UUID) {
-        let topY = panel.frame.maxY
         let targetFrame = NSRect(
-            x: panel.frame.minX,
-            y: topY - miniSize,
+            x: panel.frame.midX - miniSize / 2,
+            y: panel.frame.maxY - miniSize,
             width: miniSize,
             height: miniSize
         )
-        animateShrinkWithSnapshot(panel: panel, to: targetFrame, noteID: noteID) {
-            NoteManager.shared.updateStowState(id: noteID, state: .mini)
-        }
+        snapTo(panel: panel, targetFrame: targetFrame, noteID: noteID, finalState: .mini)
     }
 
-    /// Transition directly from mini to rolledUp without an intermediate expand.
+    /// Transition directly from mini to the balloon handle without an
+    /// intermediate expand. The handle appears local to the mini (2026-07-12
+    /// redesign: handles live where their note lived, never at screen top).
     func miniToRolledUp(panel: FloatingPanel, noteID: UUID) {
-        guard let note = NoteManager.shared.note(byID: noteID) else { return }
-        let expandedWidth = note.expandedSize?.width ?? GoldenRatio.medium.width
-        let topY = panel.frame.maxY
-        let targetFrame = NSRect(
-            x: panel.frame.minX,
-            y: topY - rolledUpHeight,
-            width: expandedWidth,
-            height: rolledUpHeight
-        )
+        let targetFrame = handleFrame(
+            for: panel.frame, on: panel.screen, noteID: noteID)
         snapTo(panel: panel, targetFrame: targetFrame, noteID: noteID, finalState: .rolledUp)
     }
 
@@ -159,6 +261,7 @@ final class StowAnimator {
         // Update SwiftUI state FIRST so the growing view renders at the
         // correct target size when the frame changes.
         NoteManager.shared.updateStowState(id: noteID, state: finalState)
+        panel.applyChrome(for: finalState)
         panel.setFrame(targetFrame, display: true, animate: false)
         DispatchQueue.main.async {
             MainActor.assumeIsolated {
@@ -179,6 +282,14 @@ final class StowAnimator {
     ) {
         let startFrame = panel.frame
 
+        // Accessibility: 視差効果を減らす — no shrink animation, just the
+        // instant state change (same path as the snapshot-failure fallback).
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            panel.setFrame(targetFrame, display: true, animate: false)
+            onFinish()
+            return
+        }
+
         // Take an NSImage snapshot of the real panel's contents. If snapshot
         // fails for any reason, fall back to instant snap.
         guard let contentView = panel.contentView else {
@@ -192,8 +303,23 @@ final class StowAnimator {
             return
         }
         contentView.cacheDisplay(in: contentView.bounds, to: rep)
+        // S3: behind-window vibrancy is a compositor effect that cacheDisplay
+        // cannot capture — the raw rep has a transparent hole where the frost
+        // was. Compose the note's SOLID theme background under the cached
+        // content so the roll-up never flashes see-through.
         let snapshot = NSImage(size: contentView.bounds.size)
-        snapshot.addRepresentation(rep)
+        snapshot.lockFocus()
+        let spec = AppearanceSettings.shared.appThemeSpec
+            ?? FloteThemeRegistry.specForLegacy(
+                NoteManager.shared.note(byID: noteID)?.colorTheme.rawValue ?? "yellow")
+        // Light-pinned to match NoteView (notes are paper, always light) —
+        // following effectiveAppearance here painted the DARK variant under
+        // the light note during the shrink = dark flash (Evaluator #4).
+        let bg = spec.palette(dark: false).background
+        NSColor(srgbRed: bg.red, green: bg.green, blue: bg.blue, alpha: 1.0).setFill()
+        NSRect(origin: .zero, size: contentView.bounds.size).fill()
+        rep.draw(in: NSRect(origin: .zero, size: contentView.bounds.size))
+        snapshot.unlockFocus()
 
         // Build a throwaway panel that only contains a plain NSView drawing
         // the snapshot. No SwiftUI, no NSHostingView → animator().setFrame
@@ -214,7 +340,10 @@ final class StowAnimator {
         let snap = SnapshotView(frame: NSRect(origin: .zero, size: startFrame.size))
         snap.image = snapshot
         snap.wantsLayer = true
-        snap.layer?.cornerRadius = 12
+        // Captured ONCE at flight start — constant for the entire animation
+        // (the invariant is "never varies DURING an animation"; the Settings
+        // apply path is gated off animating panels, so it cannot move here).
+        snap.layer?.cornerRadius = AppearanceSettings.shared.cornerRadius
         snap.layer?.masksToBounds = true
         snap.autoresizingMask = [.width, .height]
         transient.contentView = snap
@@ -256,11 +385,11 @@ final class StowAnimator {
 }
 
 /// Plain NSView that draws an NSImage anchored to the TOP of its bounds.
-/// As the containing window shrinks during a roll-up animation, the view
+/// As the containing window shrinks during the mini transition, the view
 /// shrinks too — with top-anchored drawing, the bottom of the snapshot
-/// gets clipped, producing a natural "scroll rolling up" visual. When the
-/// view grows (reverse direction), the bottom reveals — but growing paths
-/// use snapTo(), not this view.
+/// gets clipped, producing a natural "scroll rolling up" visual. Used
+/// ONLY by animateShrinkWithSnapshot (the stow path stopped flying
+/// entirely — 2026-07-12 redesign — so the scale-to-fit mode is gone).
 private final class SnapshotView: NSView {
     var image: NSImage? {
         didSet { needsDisplay = true }

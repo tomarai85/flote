@@ -13,7 +13,19 @@ final class NoteManager {
     // Track pending save task so we can cancel and reschedule (debounce).
     private var saveTask: Task<Void, Never>?
 
+    /// S2 dirty tracking: mutators record WHICH note changed; the debounced
+    /// flush writes only those per-note files instead of rewriting the whole
+    /// array. A note whose save fails stays dirty and is retried on the next
+    /// flush (disk-full etc. never silently drops an edit).
+    private var dirtyNoteIDs: Set<UUID> = []
+
     private init() {}
+
+    /// Mark one note as needing a per-note write and arm the debounce.
+    private func markDirty(_ id: UUID) {
+        dirtyNoteIDs.insert(id)
+        scheduleSave()
+    }
 
     // MARK: - Lookup
 
@@ -48,8 +60,10 @@ final class NoteManager {
     @discardableResult
     func createNote() -> StickyNote {
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-        let centerX = screen.midX - GoldenRatio.medium.width / 2
-        let centerY = screen.midY - GoldenRatio.medium.height / 2
+        // New notes start at the app-level size suggestion (小/中/大).
+        let defaultSize = FloatingPanel.SizePreset.current.size
+        let centerX = screen.midX - defaultSize.width / 2
+        let centerY = screen.midY - defaultSize.height / 2
         let jitterX = CGFloat.random(in: -60...60)
         let jitterY = CGFloat.random(in: -40...40)
 
@@ -59,7 +73,7 @@ final class NoteManager {
         // scratch notes never clutter Inbox.
         let note = StickyNote(
             position: CGPoint(x: centerX + jitterX, y: centerY + jitterY),
-            size: GoldenRatio.medium,
+            size: defaultSize,
             colorTheme: nextColor(),
             zOrder: maxZ + 1,
             groupID: nil,
@@ -68,7 +82,7 @@ final class NoteManager {
         )
         notes.append(note)
         rebuildIndex()
-        scheduleSave()
+        markDirty(note.id)
         return note
     }
 
@@ -104,50 +118,68 @@ final class NoteManager {
                 if let pos = notes[i].expandedPosition {
                     notes[i].position = pos
                 }
+                markDirty(notes[i].id)
             }
         }
-        scheduleSave()
     }
 
+    /// Soft-delete a note into the recently-deleted store. EVERY delete goes
+    /// through here — blank notes included (durability principle: a note the
+    /// user watched vanish must always be recoverable for 30 days). The note
+    /// is removed from the active array only after the recently-deleted copy
+    /// is durably on disk; if that write fails the note STAYS active and the
+    /// failure is logged — no code path drops a note silently.
     func deleteNote(id: UUID) {
-        // Save to history only if the note has content.
-        if let note = note(byID: id),
-           !note.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            addToHistory(note)
+        guard let note = note(byID: id) else { return }
+        do {
+            let stamped = try PersistenceService.softDelete(note: note)
+            // Mirror is kept oldest-first so `history.last` = newest deletion
+            // (same invariant the 20-cap ring had — nextColor relies on it).
+            history.append(stamped)
+        } catch {
+            NSLog("[Flote] softDelete failed for %@ — note kept active: %@",
+                  id.uuidString, String(describing: error))
+            return
         }
         notes.removeAll { $0.id == id }
         rebuildIndex()
-        scheduleSave()
+        dirtyNoteIDs.remove(id)
+        // A deleted note's pending reminders must not ring (S6 reminders).
+        ReminderService.cancelAll(noteID: id)
     }
 
-    // MARK: - History
+    // MARK: - Recently Deleted (S2 — backs the old `history` API surface)
+    //
+    // `history` is an in-memory mirror of the recently-deleted per-note
+    // store, kept OLDEST-FIRST so existing UI (`history.reversed()` = newest
+    // first) and `history.last` (most recent deletion) keep their semantics.
+    // The 20-cap ring is gone; retention is time-based (30 days, purged at
+    // launch) and every entry lives as its own encrypted file on disk.
 
     private(set) var history: [StickyNote] = []
 
     func loadHistory() {
+        // Time-based retention: drop entries older than 30 days first.
+        PersistenceService.purgeExpiredDeleted()
         do {
-            history = try PersistenceService.loadHistory()
+            // loadRecentlyDeleted returns newest-first; mirror stores oldest-first.
+            history = Array(try PersistenceService.loadRecentlyDeleted().reversed())
         } catch {
             history = []
         }
     }
 
-    private func addToHistory(_ note: StickyNote) {
-        history.append(note)
-        // Keep last 20 entries.
-        if history.count > 20 {
-            history.removeFirst(history.count - 20)
-        }
-        do {
-            try PersistenceService.saveHistory(history)
-        } catch {
-            print("[Flote] History save failed: \(error.localizedDescription)")
-        }
-    }
-
     func restoreFromHistory(id: UUID) -> StickyNote? {
-        guard let index = history.firstIndex(where: { $0.id == id }) else { return nil }
-        var note = history.remove(at: index)
+        let restored: StickyNote?
+        do {
+            restored = try PersistenceService.restoreDeleted(id: id)
+        } catch {
+            NSLog("[Flote] restoreDeleted failed for %@: %@",
+                  id.uuidString, String(describing: error))
+            return nil
+        }
+        guard var note = restored else { return nil }
+        history.removeAll { $0.id == id }
 
         // Multi-note mode: append alongside existing notes, do not replace.
         // Bump zOrder so the restored note comes to the front.
@@ -173,36 +205,28 @@ final class NoteManager {
 
         notes.append(note)
         rebuildIndex()
-        scheduleSave()
-        do {
-            try PersistenceService.saveHistory(history)
-        } catch {
-            print("[Flote] History save failed: \(error.localizedDescription)")
-        }
+        markDirty(note.id)
         return note
     }
 
     func clearHistory() {
+        // User-confirmed permanent erase of the recently-deleted store.
+        PersistenceService.purgeAllDeleted()
         history.removeAll()
-        do {
-            try PersistenceService.saveHistory(history)
-        } catch {
-            print("[Flote] History clear failed: \(error.localizedDescription)")
-        }
     }
 
     func updateText(id: UUID, text: String) {
         guard let index = index(for: id) else { return }
         notes[index].text = text
         notes[index].modifiedAt = Date()
-        scheduleSave()
+        markDirty(id)
     }
 
     func updateRolledTitle(id: UUID, title: String?) {
         guard let index = index(for: id) else { return }
         let trimmed = title?.trimmingCharacters(in: .whitespacesAndNewlines)
         notes[index].rolledTitle = (trimmed?.isEmpty ?? true) ? nil : trimmed
-        scheduleSave()
+        markDirty(id)
     }
 
     func updateRichText(id: UUID, data: Data?, plainText: String) {
@@ -210,7 +234,7 @@ final class NoteManager {
         notes[index].richTextData = data
         notes[index].text = plainText
         notes[index].modifiedAt = Date()
-        scheduleSave()
+        markDirty(id)
     }
 
     /// Register an undo action for an Organize operation directly in NoteManager,
@@ -237,6 +261,9 @@ final class NoteManager {
             }
             nm.updateRichText(id: noteID, data: prevData, plainText: prevPlain)
             nm.updateRolledTitle(id: noteID, title: prevTitle)
+            // Keep the Organize↔戻す toggle consistent: after ⌘Z restores the
+            // scribble there is nothing left to revert to.
+            nm.clearOrganizeSnapshot(id: noteID)
             nm.cancelPendingSave()
             nm.save()
             // Re-render any open panel for this note.
@@ -247,35 +274,234 @@ final class NoteManager {
         um.setActionName("Organize")
     }
 
+    // MARK: - Organize↔戻す snapshot (S1 content-protection toggle)
+
+    /// Persist the pre-Organize state on the note itself so 戻す survives
+    /// panel close and app restart. While a snapshot exists the Organize
+    /// button shows 戻す — re-organizing organized output (the "summary
+    /// shrinks forever" accident) is structurally impossible.
+    func setOrganizeSnapshot(
+        id: UUID,
+        originalRichData: Data?,
+        originalPlain: String,
+        originalTitle: String?,
+        organizedPlain: String
+    ) {
+        guard let index = index(for: id) else { return }
+        notes[index].organizeOriginalRichData = originalRichData
+        notes[index].organizeOriginalPlain = originalPlain
+        notes[index].organizeOriginalTitle = originalTitle
+        notes[index].organizedResultPlain = organizedPlain
+        markDirty(id)
+    }
+
+    /// True when the note has been edited AFTER Organize produced its
+    /// result — 戻す must then confirm before discarding those edits.
+    func hasUserEditsAfterOrganize(id: UUID) -> Bool {
+        guard let note = note(byID: id),
+              let organized = note.organizedResultPlain else { return false }
+        return note.text != organized
+    }
+
+    /// Restore the pre-Organize state (lossless — the snapshot holds the
+    /// exact rich text, plain text, and title). Clears the snapshot so the
+    /// button returns to Organize mode. No-op if there is no snapshot.
+    func revertOrganize(id noteID: UUID) {
+        guard let note = note(byID: noteID),
+              let prevPlain = note.organizeOriginalPlain else { return }
+        let prevData = note.organizeOriginalRichData
+        let prevTitle = note.organizeOriginalTitle
+        updateRichText(id: noteID, data: prevData, plainText: prevPlain)
+        updateRolledTitle(id: noteID, title: prevTitle)
+        clearOrganizeSnapshot(id: noteID)
+        cancelPendingSave()
+        save()
+        // Reload is the CALLER's job via reloadTrigger (NoteView.performRevert)
+        // — that path clears stale undo actions and resets typing attributes,
+        // which a direct PanelManager.reloadTextView here would skip
+        // (Codex S1 #6: double-dispatched reload with inconsistent semantics).
+    }
+
+    func clearOrganizeSnapshot(id: UUID) {
+        guard let index = index(for: id) else { return }
+        notes[index].organizeOriginalRichData = nil
+        notes[index].organizeOriginalPlain = nil
+        notes[index].organizeOriginalTitle = nil
+        notes[index].organizedResultPlain = nil
+        markDirty(id)
+    }
+
+    // MARK: - S6c: sink completed checkbox lines (Things-style)
+
+    /// UserDefaults key for the 一般 setting 「完了した項目を下に移動」.
+    nonisolated static let sinkCompletedKey = "floteSinkCompleted"
+
+    /// Default ON — absence of the key means enabled.
+    nonisolated static var sinkCompletedEnabled: Bool {
+        UserDefaults.standard.object(forKey: sinkCompletedKey) == nil
+            || UserDefaults.standard.bool(forKey: sinkCompletedKey)
+    }
+
+    nonisolated static let newNoteFocusKey = "floteNewNoteFocus"
+
+    /// Default ON — a user-initiated new note starts ready to type
+    /// (Codex UX gap: hotkey note required an extra click before typing).
+    nonisolated static var newNoteFocusEnabled: Bool {
+        UserDefaults.standard.object(forKey: newNoteFocusKey) == nil
+            || UserDefaults.standard.bool(forKey: newNoteFocusKey)
+    }
+
+    /// Reorder the note so lines whose FIRST checkbox token is `[✓]` sink to
+    /// the bottom (stable: both groups keep their relative order; a trailing
+    /// run of blank lines stays pinned at the very end). The reorder moves
+    /// ATTRIBUTED substrings — per-line formatting is preserved exactly,
+    /// never regenerated or flattened (content-protection principle).
+    ///
+    /// Fail-closed no-ops (never guess, never mangle):
+    /// - plain mirror diverged from the rich string → NSLog + no-op
+    /// - unarchive/archive failure → NSLog + no-op
+    /// - already ordered / setting disabled / note missing → silent no-op
+    ///
+    /// On change: registers undo (registerOrganizeUndo pattern — value
+    /// capture only, singleton target), persists, and reloads any open
+    /// panel. Returns true only when the note actually changed.
+    @discardableResult
+    func sinkCompletedLines(id noteID: UUID, undoManager: UndoManager? = nil) -> Bool {
+        guard Self.sinkCompletedEnabled, let note = note(byID: noteID) else { return false }
+
+        // Source of truth: the archived rich text. Fallback for notes that
+        // never carried rich data: build one from the plain mirror with the
+        // editor's default attributes (mirrors RichTextEditor.makeNSView).
+        let rich: NSAttributedString
+        if let data = note.richTextData {
+            guard let unarchived = RichTextStorage.unarchive(data) else {
+                NSLog("[Flote] sinkCompletedLines: unarchive failed for %@ — no-op",
+                      noteID.uuidString)
+                return false
+            }
+            rich = unarchived
+        } else {
+            rich = NSAttributedString(string: note.text,
+                                      attributes: Self.defaultEditorAttributes(
+                                        legacyTheme: note.colorTheme.rawValue))
+        }
+
+        // Paragraph math runs over the plain string; if note.text diverged
+        // from the rich string the ranges would move the WRONG bytes — abort.
+        let ranges: [NSRange]
+        switch CheckboxSink.plan(richString: rich.string, plainMirror: note.text) {
+        case .noop:
+            return false
+        case .divergedAbort:
+            NSLog("[Flote] sinkCompletedLines: plain/rich mirror diverged for %@ — abort (no-op)",
+                  noteID.uuidString)
+            return false
+        case .reorder(let r):
+            ranges = r
+        }
+
+        // Rebuild by concatenating attributed substrings in the new order
+        // (pure, standalone-tested — see CheckboxSink.rebuild).
+        let rebuilt = CheckboxSink.rebuild(from: rich, ranges: ranges)
+
+        // Duplicate lines can reorder into an identical document — treat as
+        // the no-op it visually is.
+        guard rebuilt.string != rich.string else { return false }
+        guard let newData = RichTextStorage.archive(rebuilt) else {
+            NSLog("[Flote] sinkCompletedLines: archive failed for %@ — no-op",
+                  noteID.uuidString)
+            return false
+        }
+
+        let prevData = note.richTextData
+        let prevPlain = note.text
+        let newPlain = rebuilt.string
+        updateRichText(id: noteID, data: newData, plainText: newPlain)
+
+        if let um = undoManager {
+            // Capture only value types; NoteManager.shared is a singleton.
+            um.registerUndo(withTarget: self) { [noteID, prevData, prevPlain] nm in
+                guard nm.note(byID: noteID) != nil else {
+                    print("[Flote] sink undo skipped: note \(noteID) no longer exists")
+                    return
+                }
+                nm.updateRichText(id: noteID, data: prevData, plainText: prevPlain)
+                nm.cancelPendingSave()
+                nm.save()
+                DispatchQueue.main.async {
+                    PanelManager.shared.reloadTextView(for: noteID, data: prevData, plain: prevPlain)
+                }
+            }
+            um.setActionName(L("完了項目を下へ移動", "Sink Completed Items"))
+        }
+
+        cancelPendingSave()
+        save()
+        PanelManager.shared.reloadTextView(for: noteID, data: newData, plain: newPlain)
+        return true
+    }
+
+    /// The editor's default attributes (mirrors RichTextEditor.makeNSView:
+    /// the RESOLVED body font — user family or theme monospace override
+    /// at the user's global size (S16) — theme ink, 2.5 line spacing).
+    /// Used only for the plain-text fallback path in sinkCompletedLines.
+    private static func defaultEditorAttributes(legacyTheme rawValue: String?) -> [NSAttributedString.Key: Any] {
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 2.5
+        return [
+            .font: FontPreference.shared.resolvedBodyFont(),
+            .foregroundColor: FloteInk.text(legacyTheme: rawValue),
+            .paragraphStyle: paragraphStyle,
+        ]
+    }
+
     func updatePosition(id: UUID, position: CGPoint) {
         guard let index = index(for: id) else { return }
         notes[index].position = position
-        scheduleSave()
+        markDirty(id)
     }
 
     func updateSize(id: UUID, size: CGSize) {
         guard let index = index(for: id) else { return }
         notes[index].size = size
-        scheduleSave()
+        markDirty(id)
+    }
+
+    /// Free resize (2026-07-11): the user dragged this panel's edges — the
+    /// note owns its geometry from now on (presets/auto-fit stop touching it).
+    func markUserResized(id: UUID) {
+        guard let index = index(for: id), !notes[index].userResized else { return }
+        notes[index].userResized = true
+        markDirty(id)
     }
 
     func updateStowState(id: UUID, state: StowState) {
         guard let index = index(for: id) else { return }
         notes[index].stowState = state
-        scheduleSave()
+        markDirty(id)
+    }
+
+    /// S6 Touch ID lock opt-in. Locking also drops the panel's screen-
+    /// capture sharing (PanelManager applies it — window-level property).
+    func updateLocked(id: UUID, locked: Bool) {
+        guard let index = index(for: id) else { return }
+        notes[index].isLocked = locked
+        markDirty(id)
+        save()
+        PanelManager.shared.applyLockState(noteID: id, locked: locked)
     }
 
     func updateColorTheme(id: UUID, theme: NoteColorTheme) {
         guard let index = index(for: id) else { return }
         notes[index].colorTheme = theme
-        scheduleSave()
+        markDirty(id)
     }
 
     func bringToFront(id: UUID) {
         guard let index = index(for: id) else { return }
         let maxZ = notes.map(\.zOrder).max() ?? 0
         notes[index].zOrder = maxZ + 1
-        scheduleSave()
+        markDirty(id)
     }
 
     // MARK: - Shape annotations
@@ -283,20 +509,20 @@ final class NoteManager {
     func addShape(noteID: UUID, shape: ShapeAnnotation) {
         guard let index = index(for: noteID) else { return }
         notes[index].shapeAnnotations.append(shape)
-        scheduleSave()
+        markDirty(noteID)
     }
 
     func removeShape(noteID: UUID, shapeID: UUID) {
         guard let index = index(for: noteID) else { return }
         notes[index].shapeAnnotations.removeAll { $0.id == shapeID }
-        scheduleSave()
+        markDirty(noteID)
     }
 
     func updateShape(noteID: UUID, shape: ShapeAnnotation) {
         guard let noteIndex = index(for: noteID) else { return }
         guard let shapeIndex = notes[noteIndex].shapeAnnotations.firstIndex(where: { $0.id == shape.id }) else { return }
         notes[noteIndex].shapeAnnotations[shapeIndex] = shape
-        scheduleSave()
+        markDirty(noteID)
     }
 
     // Persist the expanded geometry so we can restore it after stowing.
@@ -306,14 +532,36 @@ final class NoteManager {
         guard notes[index].stowState == .expanded else { return }
         notes[index].expandedSize = size
         notes[index].expandedPosition = position
-        scheduleSave()
+        markDirty(id)
     }
 
     // MARK: - Persistence
 
+    /// True when load() aborted on total keychain denial — AppDelegate must
+    /// NOT create a fresh note over an intact-but-locked store.
+    private(set) var loadBlockedByKeychain = false
+
     func load() {
+        // S2: one-shot idempotent migration (combined array → per-note files,
+        // legacy history → recently-deleted), then load the per-note store.
+        // One corrupt note file never blocks the rest from loading.
+        PersistenceService.migrateToPerNoteStoreIfNeeded()
         do {
-            notes = try PersistenceService.load()
+            notes = try PersistenceService.loadAllNotesV2()
+        } catch let error as NoteEncryption.NoteEncryptionError {
+            // Total keychain denial (r3b NEW-3): the store is intact but
+            // this build may not read the key. LOUD, with the fix in hand —
+            // and the flag stops AppDelegate from "starting fresh".
+            notes = []
+            loadBlockedByKeychain = true
+            NSLog("[Flote] load blocked by keychain: %@", String(describing: error))
+            let alert = NSAlert()
+            alert.alertStyle = .critical
+            alert.messageText = L("ノートを読み込めません", "Can't unlock your notes")
+            alert.informativeText = L(
+                "ノートは無事ですが、この Flote が暗号化キーへのアクセスを拒否されています。アプリを入れ直した場合は Keychain の許可が必要です。",
+                "Your notes are safe on disk, but this copy of Flote was denied access to the encryption key. If the app was reinstalled, the Keychain needs to grant it again.")
+            alert.runModal()
         } catch {
             notes = []
         }
@@ -360,12 +608,33 @@ final class NoteManager {
         }
     }
 
-    func save() {
-        do {
-            try PersistenceService.save(notes)
-        } catch {
-            print("[Flote] Save failed: \(error.localizedDescription)")
+    /// Synchronously write every dirty note to its per-note file. Notes whose
+    /// write fails STAY dirty and are retried on the next flush — an edit is
+    /// never silently dropped because the disk hiccuped once.
+    /// Called by the debounce, the sleep observer, applicationWillTerminate,
+    /// and the Organize undo/revert paths (via `save()`).
+    func flushAllDirty() {
+        guard !dirtyNoteIDs.isEmpty else { return }
+        var stillDirty: Set<UUID> = []
+        for id in dirtyNoteIDs {
+            // A dirty id with no live note was deleted after being marked —
+            // softDelete already secured its file; nothing to write.
+            guard let note = note(byID: id) else { continue }
+            do {
+                try PersistenceService.saveNote(note)
+            } catch {
+                stillDirty.insert(id)
+                NSLog("[Flote] Save failed for note %@ (kept dirty for retry): %@",
+                      id.uuidString, String(describing: error))
+            }
         }
+        dirtyNoteIDs = stillDirty
+    }
+
+    /// Kept as the historical entry point (sleep observer, terminate path,
+    /// Organize undo/revert). Now flushes dirty per-note files.
+    func save() {
+        flushAllDirty()
     }
 
     // MARK: - Debounced save
@@ -378,7 +647,7 @@ final class NoteManager {
             } catch {
                 return  // Task was cancelled; a newer save is pending.
             }
-            await self?.save()
+            self?.flushAllDirty()
         }
     }
 
@@ -397,7 +666,7 @@ final class NoteManager {
     func closePanel(noteID: UUID) {
         guard let i = index(for: noteID) else { return }
         notes[i].isPanelOpen = false
-        scheduleSave()
+        markDirty(noteID)
     }
 
     /// Re-open the floating panel for this note (user clicked it in Groups tab).
@@ -421,20 +690,53 @@ final class NoteManager {
                 )
             }
         }
-        scheduleSave()
+        markDirty(noteID)
+    }
+
+    // MARK: - Deck (S16 — one window, many notes)
+
+    /// Ordered member IDs of the deck containing this note; `[noteID]`
+    /// for a solo note, `[]` when the note no longer exists. Reads
+    /// `notes` inside SwiftUI body → Observation re-renders the deck
+    /// indicator on any membership change.
+    func deckMemberIDs(with noteID: UUID) -> [UUID] {
+        guard let note = note(byID: noteID) else { return [] }
+        guard let deckID = note.deckID else { return [noteID] }
+        return FloteDeck.orderedIDs(
+            deckMembers(deckID: deckID).map { ($0.id, $0.deckOrder, $0.createdAt) })
+    }
+
+    /// All active notes carrying this deckID (unordered).
+    func deckMembers(deckID: UUID) -> [StickyNote] {
+        notes.filter { $0.deckID == deckID }
+    }
+
+    /// Set or clear deck membership. Clearing IS "leaving the deck"
+    /// (archive / AI-sort put-away); the deck needs no other bookkeeping —
+    /// membership lives entirely on the notes.
+    func setDeck(id: UUID, deckID: UUID?, order: Int?) {
+        guard let i = index(for: id) else { return }
+        guard notes[i].deckID != deckID || notes[i].deckOrder != order else { return }
+        notes[i].deckID = deckID
+        notes[i].deckOrder = order
+        markDirty(id)
     }
 
     /// Archive a note: park it in Inbox if it has no group, then close the
     /// panel. The note itself is never deleted — it stays retrievable from
     /// the Groups tab. Used by ⌘W and the archive hotkey.
+    ///
+    /// F2 empty-note hygiene: a STRICTLY empty note (NoteHygiene predicate —
+    /// no text, no rich content, no title, no shapes, not locked) is silently
+    /// discarded instead — it never lands in Groups Inbox NOR in Recently
+    /// Deleted (there is literally nothing to recover). A note that is only
+    /// text-empty but fails any other clause (rich data diverged, shapes,
+    /// locked, titled) takes the normal archive path — content protection
+    /// wins over tidiness.
     func archiveNote(id: UUID) {
         guard let i = index(for: id) else { return }
-        let hasContent = !notes[i].text
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .isEmpty
-        // Empty scratch notes are thrown away entirely (nothing worth archiving).
-        if !hasContent {
-            deleteNote(id: id)
+        if isStrictlyEmpty(notes[i]) {
+            discardEmptyNote(id: id, reason: "archive of empty note")
             return
         }
         if notes[i].groupID == nil {
@@ -446,6 +748,78 @@ final class NoteManager {
         closePanel(noteID: id)
     }
 
+    // MARK: - F2 empty-note hygiene
+
+    /// AppKit-side wrapper around the pure `NoteHygiene` predicate: decodes
+    /// `richTextData` (when present) into its plain string. A decode failure
+    /// is reported as undecodable — the pure core then refuses to call the
+    /// note empty (we can't prove it, so we keep it).
+    private func isStrictlyEmpty(_ note: StickyNote) -> Bool {
+        var richPlain: String?
+        var undecodable = false
+        if let data = note.richTextData {
+            if let attr = RichTextStorage.unarchive(data) {
+                richPlain = attr.string
+            } else {
+                undecodable = true
+            }
+        }
+        return NoteHygiene.isDiscardablyEmpty(
+            text: note.text,
+            richPlain: richPlain,
+            hasUndecodableRichData: undecodable,
+            rolledTitle: note.rolledTitle,
+            hasShapeAnnotations: !note.shapeAnnotations.isEmpty,
+            isLocked: note.isLocked
+        )
+    }
+
+    /// Hard-discard a strictly-empty note: unlike `deleteNote(id:)` this
+    /// NEVER writes a Recently-Deleted copy — the store exists to recover
+    /// content, and a genuinely empty note has none, so parking it there is
+    /// pure clutter. `PersistenceService.deleteNoteFile`'s "secure a durable
+    /// copy first" contract is intentionally waived here for exactly that
+    /// reason. Fail-closed: the emptiness predicate is re-verified at the
+    /// door, so no caller can route a non-empty note through this path.
+    private func discardEmptyNote(id: UUID, reason: String) {
+        guard let note = note(byID: id), isStrictlyEmpty(note) else { return }
+        notes.removeAll { $0.id == id }
+        rebuildIndex()
+        dirtyNoteIDs.remove(id)
+        // A discarded note's pending reminders must not ring.
+        ReminderService.cancelAll(noteID: id)
+        do {
+            try PersistenceService.deleteNoteFile(id: id)
+        } catch {
+            // Leftover file = the note resurrects on next launch, which errs
+            // on the keep-data side; the launch sweep retires it eventually.
+            NSLog("[Flote] discardEmptyNote: file cleanup failed for %@: %@",
+                  id.uuidString, String(describing: error))
+        }
+        NSLog("[Flote] discarded empty note %@ (%@)", id.uuidString, reason)
+    }
+
+    /// Launch-time sweep (F2): purge empty notes that (a) are not open in any
+    /// panel, (b) are older than 24h — BOTH createdAt and modifiedAt, one
+    /// keep-side notch stricter than the spec so a note emptied minutes ago
+    /// survives — and (c) show no user intent: an explicit groupID or a
+    /// rolledTitle exempts a note (the title check lives inside the
+    /// NoteHygiene predicate). Call AFTER load()/migrateLegacyFields and
+    /// BEFORE panels are restored.
+    func purgeStaleEmptyNotesAtLaunch(olderThan interval: TimeInterval = 24 * 60 * 60) {
+        let cutoff = Date().addingTimeInterval(-interval)
+        let stale = notes.filter { note in
+            !note.isPanelOpen
+                && note.groupID == nil
+                && note.createdAt < cutoff
+                && note.modifiedAt < cutoff
+                && isStrictlyEmpty(note)
+        }
+        for note in stale {
+            discardEmptyNote(id: note.id, reason: "launch sweep, created \(note.createdAt)")
+        }
+    }
+
     /// Move a note to the specified group and record a learning example so
     /// future AI sorts pick up the user's preference. Passing the same group
     /// as the current one is a no-op (no learning noise).
@@ -454,7 +828,7 @@ final class NoteManager {
         if notes[i].groupID == groupID { return }
         notes[i].groupID = groupID
         notes[i].sortedAt = Date()
-        scheduleSave()
+        markDirty(id)
 
         // Record as a learning example for few-shot classification.
         if let group = GroupManager.shared.group(byID: groupID) {
@@ -471,7 +845,6 @@ final class NoteManager {
     /// that actually carry content; empty scratch notes stay groupless and
     /// never surface in Groups until the user runs Organize on them.
     func migrateLegacyFields(inboxID: UUID) {
-        var changed = false
         for i in notes.indices where notes[i].groupID == nil {
             let hasContent = !notes[i].text
                 .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -481,9 +854,8 @@ final class NoteManager {
             if notes[i].sortedAt == nil {
                 notes[i].sortedAt = Date()
             }
-            changed = true
+            markDirty(notes[i].id)
         }
-        if changed { scheduleSave() }
     }
 
     /// Notes whose panel should be restored on app launch.
@@ -599,10 +971,315 @@ final class NoteManager {
             errorBreakdown: errorBreakdown
         )
     }
+
+    // MARK: - Backup restore merge (P1/S manual backup)
+
+    /// Tally returned by importBackup, rendered in the Settings result alert
+    /// (「N件を復元、M件は既に存在するためスキップ」).
+    struct BackupImportOutcome {
+        let restored: Int
+        let skipped: Int
+        let groupsCreated: Int
+    }
+
+    /// Merge the notes of a parsed backup document into the live store.
+    ///
+    /// CONTENT-PROTECTION CONTRACT:
+    /// - an id that already exists (active note OR recently-deleted entry)
+    ///   is SKIPPED — restore can never overwrite live data, and never
+    ///   plants a duplicate id across the two stores;
+    /// - imported notes land with their panel CLOSED — they appear in their
+    ///   groups, not as N windows exploding onto the screen;
+    /// - a note's group is resolved id-first, then by NAME against live
+    ///   groups; missing groups are recreated (at root) from the backup's
+    ///   own group table; unresolvable/absent groups fall back to Inbox
+    ///   (content-bearing notes) or stay groupless (empty scratch notes),
+    ///   mirroring migrateLegacyFields;
+    /// - every write goes through the app's normal save path
+    ///   (markDirty → flushAllDirty → PersistenceService.saveNote), never
+    ///   raw file copies into the live store.
+    ///
+    /// Callers MUST have run FloteBackup.parse (all-or-nothing validation)
+    /// and PersistenceService.snapshotBeforeRestore() before calling this.
+    func importBackup(_ doc: FloteBackup.Document) -> BackupImportOutcome {
+        let gm = GroupManager.shared
+        gm.ensureInboxExists()
+
+        // Duplicate group ids inside a hand-edited backup: first wins.
+        let backupGroups = Dictionary(doc.groups.map { ($0.id, $0) },
+                                      uniquingKeysWith: { first, _ in first })
+        // liveIDs also absorbs ids imported THIS run, so a backup that
+        // repeats an id can't append the same note twice.
+        var liveIDs = Set(notes.map(\.id))
+        let historyIDs = Set(history.map(\.id))
+        var createdByName: [String: UUID] = [:]
+        var restored = 0
+        var skipped = 0
+        var groupsCreated = 0
+
+        for var note in doc.notes {
+            if liveIDs.contains(note.id) || historyIDs.contains(note.id) {
+                skipped += 1
+                continue
+            }
+            let hasContent = !note.text
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+            note.groupID = resolveImportGroup(
+                note.groupID,
+                hasContent: hasContent,
+                backupGroups: backupGroups,
+                createdByName: &createdByName,
+                groupsCreated: &groupsCreated
+            )
+            if note.groupID != nil, note.sortedAt == nil {
+                note.sortedAt = Date()
+            }
+            // Land quietly in Groups; the user opens what they need.
+            note.isPanelOpen = false
+            // An active note must never carry a deletion stamp (a stray
+            // deletedAt from a history-derived payload would purge it in 30d).
+            note.deletedAt = nil
+            notes.append(note)
+            liveIDs.insert(note.id)
+            restored += 1
+        }
+
+        rebuildIndex()
+        // Mark AFTER rebuildIndex so flushAllDirty's note(byID:) hits the
+        // O(1) index instead of the linear fallback for every imported note.
+        for note in notes.suffix(restored) {
+            markDirty(note.id)
+        }
+        cancelPendingSave()
+        save()               // synchronous flush through the normal per-note path
+        gm.flushSaveNow()    // persist any groups created during the merge
+        gm.notifyGroupsChanged()
+
+        return BackupImportOutcome(
+            restored: restored, skipped: skipped, groupsCreated: groupsCreated)
+    }
+
+    /// Resolve the group home for one imported note. See importBackup docs.
+    private func resolveImportGroup(
+        _ backupGroupID: UUID?,
+        hasContent: Bool,
+        backupGroups: [UUID: NoteGroup],
+        createdByName: inout [String: UUID],
+        groupsCreated: inout Int
+    ) -> UUID? {
+        let gm = GroupManager.shared
+        guard let gid = backupGroupID else {
+            // Same convention as migrateLegacyFields: content-bearing notes
+            // get an Inbox home, empty scratch notes stay groupless.
+            return hasContent ? gm.inboxID : nil
+        }
+        // Best case: the exact group still exists (restore onto same machine).
+        if gm.group(byID: gid) != nil { return gid }
+        // The group id is foreign — find it in the backup's own group table
+        // and match/recreate by NAME.
+        guard let backupGroup = backupGroups[gid] else {
+            // Note references a group the backup itself doesn't carry
+            // (hand-edited file); parse() passed, so fail soft into Inbox.
+            return gm.inboxID
+        }
+        if let live = gm.groups.first(where: { $0.name == backupGroup.name }) {
+            return live.id
+        }
+        if let alreadyCreated = createdByName[backupGroup.name] {
+            return alreadyCreated
+        }
+        let g = gm.createGroup(
+            name: backupGroup.name,
+            icon: backupGroup.iconName,
+            colorHex: backupGroup.colorHex
+        )
+        createdByName[backupGroup.name] = g.id
+        groupsCreated += 1
+        return g.id
+    }
 }
+
+// MARK: - CheckboxSink (S6c pure core)
+
+// S6C-SINK-PURE-BEGIN
+/// Pure sink-partition core for 「完了した項目を下に移動」. Foundation-only —
+/// the standalone harness (`.harness/tests/s6c-sink-test.sh`) extracts this
+/// region verbatim with sed and compiles it with swiftc, so the test always
+/// runs against the SHIPPING logic, never a copy. Keep this region free of
+/// AppKit / app-type references.
+enum CheckboxSink {
+
+    /// What sinkCompletedLines should do, decided purely from strings.
+    enum SinkPlan: Equatable {
+        /// Already ordered (or nothing to do) — leave the note untouched.
+        case noop
+        /// note.text no longer mirrors the rich string — reordering would
+        /// move the wrong ranges. Abort, never guess (content protection).
+        case divergedAbort
+        /// Paragraph ranges of the ORIGINAL string, in the new order.
+        case reorder([NSRange])
+    }
+
+    private static let uncheckedToken = "[ ]"
+    private static let checkedToken = "[\u{2713}]"
+
+    /// Line terminators NSString paragraph APIs recognize (LF/CR/LS/PS;
+    /// a CRLF pair ends in LF so the suffix check covers it too).
+    private static let terminators: Set<Character> = ["\n", "\r", "\u{2028}", "\u{2029}"]
+
+    static func endsWithLineTerminator(_ s: String) -> Bool {
+        guard let last = s.last else { return false }
+        return terminators.contains(last)
+    }
+
+    /// Whether the line's FIRST checkbox token is the checked one.
+    /// nil = the line carries no checkbox token at all. Position in the
+    /// line is irrelevant — same rule FloteLayoutManager uses for
+    /// done-line styling, so what strikes through is what sinks.
+    static func firstTokenChecked(inLine line: String) -> Bool? {
+        let unchecked = line.range(of: uncheckedToken)
+        let checked = line.range(of: checkedToken)
+        switch (unchecked, checked) {
+        case (nil, nil):               return nil
+        case (nil, .some):             return true
+        case (.some, nil):             return false
+        case let (.some(u), .some(c)): return c.lowerBound < u.lowerBound
+        }
+    }
+
+    /// Paragraph ranges of `text` in document order. Each range includes its
+    /// terminator except (possibly) the last. The zero-length "caret
+    /// paragraph" after a trailing newline is intentionally not produced.
+    static func paragraphRanges(of text: NSString) -> [NSRange] {
+        var ranges: [NSRange] = []
+        var location = 0
+        while location < text.length {
+            let r = text.paragraphRange(for: NSRange(location: location, length: 0))
+            // paragraphRange always advances past at least one character
+            // here (location < length), but guard against a stall anyway.
+            guard r.length > 0 else { break }
+            ranges.append(r)
+            location = NSMaxRange(r)
+        }
+        return ranges
+    }
+
+    /// Decide the sink reorder for a note.
+    /// - Stable partition: non-completed lines first (original order), then
+    ///   lines whose first checkbox token is `[✓]` (original order).
+    /// - A trailing run of blank lines stays pinned at the very end, so a
+    ///   completed line never sinks BELOW the note's trailing empty space.
+    static func plan(richString: String, plainMirror: String) -> SinkPlan {
+        guard richString == plainMirror else { return .divergedAbort }
+        let text = richString as NSString
+        guard text.length > 0 else { return .noop }
+        let ranges = paragraphRanges(of: text)
+        guard ranges.count > 1 else { return .noop }
+
+        // Pin the trailing blank run (empty or whitespace-only lines).
+        var end = ranges.count
+        while end > 0 {
+            let line = text.substring(with: ranges[end - 1])
+            guard line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { break }
+            end -= 1
+        }
+
+        var floaters: [Int] = []   // non-completed, original order
+        var sinkers: [Int] = []    // completed, original order
+        for i in 0..<end {
+            if firstTokenChecked(inLine: text.substring(with: ranges[i])) == true {
+                sinkers.append(i)
+            } else {
+                floaters.append(i)
+            }
+        }
+        guard !sinkers.isEmpty else { return .noop }
+        let order = floaters + sinkers + Array(end..<ranges.count)
+        guard order != Array(0..<ranges.count) else { return .noop }
+        return .reorder(order.map { ranges[$0] })
+    }
+
+    /// Rebuild the document by concatenating the ATTRIBUTED paragraph
+    /// substrings in `ranges` order — per-line formatting travels with each
+    /// substring untouched (content-protection principle). The only
+    /// characters ever added or removed are line terminators:
+    /// - a moved-up original-final line (no terminator) gains one, inheriting
+    ///   the segment's trailing attributes so formatting spans stay seamless;
+    /// - the rebuilt document keeps the original's trailing-newline shape
+    ///   (CRLF pair = 2 UTF-16 units, all other terminators = 1).
+    static func rebuild(from rich: NSAttributedString, ranges: [NSRange]) -> NSAttributedString {
+        let rebuilt = NSMutableAttributedString()
+        for (pos, range) in ranges.enumerated() {
+            let segment = rich.attributedSubstring(from: range)
+            rebuilt.append(segment)
+            if pos < ranges.count - 1, segment.length > 0,
+               !endsWithLineTerminator(segment.string) {
+                let attrs = segment.attributes(at: segment.length - 1, effectiveRange: nil)
+                rebuilt.append(NSAttributedString(string: "\n", attributes: attrs))
+            }
+        }
+        if !endsWithLineTerminator(rich.string), endsWithLineTerminator(rebuilt.string) {
+            let s = rebuilt.string as NSString
+            let tail = (s.length >= 2
+                        && s.character(at: s.length - 2) == 0x0D
+                        && s.character(at: s.length - 1) == 0x0A) ? 2 : 1
+            rebuilt.deleteCharacters(in: NSRange(location: s.length - tail, length: tail))
+        }
+        return rebuilt
+    }
+}
+// S6C-SINK-PURE-END
+
+// MARK: - NoteHygiene (F2 empty-note hygiene, pure core)
+
+// F2-EMPTY-PURE-BEGIN
+/// Pure emptiness predicate for empty-note hygiene (Tot/Antinote lesson: no
+/// ghost stickies). Foundation-only — the standalone harness
+/// (`.harness/tests/f2-empty-test.sh`) extracts this region verbatim with sed
+/// and compiles it with swiftc, so the test always runs against the SHIPPING
+/// logic, never a copy. Keep this region free of AppKit / app-type references.
+enum NoteHygiene {
+
+    /// STRICT emptiness: true ONLY when every signal says there is nothing to
+    /// keep. Content protection is the #1 principle of this codebase — every
+    /// clause fails CLOSED (any doubt = not empty = keep the note):
+    /// - `text` must be empty after trimming whitespace/newlines.
+    /// - Rich content: `richPlain` is the decoded rich string (nil when the
+    ///   note has no rich data at all) — if present it must also trim to
+    ///   empty. `hasUndecodableRichData` = rich bytes exist but could not be
+    ///   decoded: we cannot PROVE emptiness, so the note is not empty.
+    /// - `rolledTitle` set (non-blank) = the user/AI titled it — intent, keep.
+    /// - Shape annotations are content in their own right — keep.
+    /// - A locked note is an explicit protection gesture — never discard.
+    static func isDiscardablyEmpty(
+        text: String,
+        richPlain: String?,
+        hasUndecodableRichData: Bool,
+        rolledTitle: String?,
+        hasShapeAnnotations: Bool,
+        isLocked: Bool
+    ) -> Bool {
+        guard !isLocked else { return false }
+        guard !hasShapeAnnotations else { return false }
+        guard !hasUndecodableRichData else { return false }
+        guard trimmedEmpty(text) else { return false }
+        if let richPlain, !trimmedEmpty(richPlain) { return false }
+        if let rolledTitle, !trimmedEmpty(rolledTitle) { return false }
+        return true
+    }
+
+    private static func trimmedEmpty(_ s: String) -> Bool {
+        s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+}
+// F2-EMPTY-PURE-END
 
 // MARK: - NoteGroup model
 
+// BACKUP-MODEL-PURE-BEGIN
+// Foundation-only model — extracted by .harness/tests/s8-backup-roundtrip-test.sh
+// (same sed-marker pattern as S6C-SINK-PURE). Keep free of AppKit references.
 struct NoteGroup: Identifiable, Codable, Hashable {
     let id: UUID
     var name: String
@@ -627,6 +1304,7 @@ struct NoteGroup: Identifiable, Codable, Hashable {
         self.createdAt = createdAt
     }
 }
+// BACKUP-MODEL-PURE-END
 
 // MARK: - GroupManager
 
@@ -909,7 +1587,7 @@ final class GroupManager {
             } catch {
                 return
             }
-            await self?.save()
+            self?.save()
         }
     }
 }
@@ -929,6 +1607,7 @@ final class GroupsSelectionState {
 
 /// A single past classification decision. The model reads recent examples as
 /// few-shot context so it learns which content the user parks in which group.
+// BACKUP-MODEL-PURE-BEGIN
 struct ClassificationExample: Codable, Identifiable {
     let id: UUID
     var noteText: String
@@ -945,6 +1624,7 @@ struct ClassificationExample: Codable, Identifiable {
         self.recordedAt = Date()
     }
 }
+// BACKUP-MODEL-PURE-END
 
 @Observable
 @MainActor
@@ -1028,7 +1708,7 @@ final class LearningManager {
             } catch {
                 return
             }
-            await self?.save()
+            self?.save()
         }
     }
 }

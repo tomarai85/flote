@@ -8,5 +8,15 @@
 	<true/>
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
+	<!-- Send to Apple Notes: user-clicked NSAppleScript only. The
+	     automation key enables the TCC consent prompt; the sandbox
+	     temporary exception scopes Apple events to Notes alone (Notes
+	     publishes no scripting-targets access group). -->
+	<key>com.apple.security.automation.apple-events</key>
+	<true/>
+	<key>com.apple.security.temporary-exception.apple-events</key>
+	<array>
+		<string>com.apple.notes</string>
+	</array>
 </dict>
 </plist>
