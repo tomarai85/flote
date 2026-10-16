@@ -66,3 +66,6 @@ dist/
 .codex/
 business/
 website/index.html.bak-*
+
+# Internal loop notes (never publish)
+LOOP.md
