@@ -10,7 +10,7 @@
 
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](./LICENSE.md)
 [![Platform: macOS](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey.svg)](https://flote-app.vercel.app)
-[![Status: trial](https://img.shields.io/badge/status-14--day%20free%20trial-2dd4bf.svg)](https://flote-app.vercel.app)
+[![Price: free](https://img.shields.io/badge/price-free-2dd4bf.svg)](https://flote-app.vercel.app)
 [![A Direct product](https://img.shields.io/badge/-a%20Direct%20product-0a0a0f.svg)](https://direct-homepage.vercel.app)
 
 > **Scribbles, auto-organized.**
@@ -22,7 +22,7 @@
 - Parent brand: [a Direct product](https://direct-homepage.vercel.app)
 - License: [FSL-1.1-ALv2](./LICENSE.md) (= converts to Apache 2.0 after 2 years)
 - Security: [report vulnerabilities via SECURITY.md](./SECURITY.md)
-- Status: **14-day free trial → $9 one-time purchase** (no subscription, no card up front) / macOS 14 (Sonoma) or later / Apple Silicon
+- Status: **Free** (no trial limit, no purchase, no subscription) / macOS 14 (Sonoma) or later / Apple Silicon
 
 
 ---
